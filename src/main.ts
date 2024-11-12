@@ -1,7 +1,14 @@
 import './output.css';
+import geo from './scripts/geodesic';
+import drawCanvas from './scripts/drawCanvas';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <h1 class="text-3xl font-bold underline">Hello World</h1>
-  <canvas id="geodesic-canvas"></canvas>
-  <section id="geodesic-interface"></section>
+  <canvas id="geodesic-canvas" class="border-4 border-black"></canvas>
+  <section id="geodesic-interface" class="border-4"></section>
 `
+
+drawCanvas.init(document.querySelector<HTMLCanvasElement>('#geodesic-canvas')!, 800, 800);
+
+geo.generateCube();
+
+drawCanvas.drawNodes(geo.nodes);
