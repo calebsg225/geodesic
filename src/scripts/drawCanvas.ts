@@ -2,32 +2,16 @@ import GeoNode from "./geodesic/node";
 
 class DrawCanvas {
   ctx: CanvasRenderingContext2D | null;
-  element: HTMLCanvasElement | null;
   width: number;
   height: number;
   centerX: number;
   centerY: number;
-  constructor() {
-    this.element = null;
-    this.width = 0;
-    this.height = 0;
-    this.centerX = 0;
-    this.centerY = 0;
-    this.ctx = null;
-  }
-
-  init = (element: HTMLCanvasElement, width: number, height: number) => {
-    element.width = width;
-    element.height = height;
-    this.element = element;
+  constructor(element: HTMLCanvasElement, width: number, height: number) {
     this.ctx = element.getContext('2d');
-    this.updateCanvasSize(width, height);
-  }
-  updateCanvasSize = (width: number, height: number) => {
     this.width = width;
     this.height = height;
     this.centerX = width/2;
-    this.centerY = width/2;
+    this.centerY = height/2;
   }
 
   drawNodes = (nodes: GeoNode[]) => {
@@ -41,6 +25,11 @@ class DrawCanvas {
       const y = this.centerY + nodes[i].y;
       this.drawCircle(x, y, nodes[i].size, nodes[i].color);
     }
+    for (let i = 0; i < behind.length; i++) {
+      const x = this.centerX + behind[i].x;
+      const y = this.centerY + behind[i].y;
+      this.drawCircle(x, y, behind[i].size, behind[i].color);
+    }
   }
 
   private drawCircle = (x: number, y: number, size: number, color: string) => {
@@ -53,4 +42,4 @@ class DrawCanvas {
   }
 }
 
-export default new DrawCanvas;
+export default DrawCanvas;
