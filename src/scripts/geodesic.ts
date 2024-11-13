@@ -33,8 +33,8 @@ class Geodesic {
 
   render = () => {}
 
-  rotate = (axis: string, positive: boolean) => {
-    console.log(`Rotated in the ${positive ? "+" : "-"} ${axis} direction...`);
+  rotate = (axis: string, isPositive: boolean) => {
+    console.log(`Rotated in the ${isPositive ? "+" : "-"} ${axis} direction...`);
   }
 }
 

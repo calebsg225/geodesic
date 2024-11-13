@@ -3,10 +3,11 @@ import Geodesic from './scripts/Geodesic';
 
 // nav buttons
 const createNavSection = (navD: string) => {
+  const buttonStyles = "bg-green-100 p-2 font-bold text-2xl text-green-700 w-16 border-4 border-black";
   return `
     <div id="${navD}-nav" class="p-2">
-      <button id="${navD}-down" data-nav="${navD}-down" class="bg-yellow-300">-${navD}</button>
-      <button id="${navD}-up" data-nav="${navD}-up" class="bg-yellow-300">+${navD}</button>
+      <button id="${navD}-down" data-nav="${navD}-down" class="${buttonStyles} rounded-l-2xl">-${navD.toUpperCase()}</button>
+      <button id="${navD}-up" data-nav="${navD}-up" class="${buttonStyles} rounded-r-2xl">+${navD.toUpperCase()}</button>
     </div>
   `
 }
