@@ -31,3 +31,6 @@ for (let i = 0; i < navElements.length; i++) {
     geo.rotate(axis, positive === 'up');
   });
 }
+
+geo.generateCube(100);
+geo.render();

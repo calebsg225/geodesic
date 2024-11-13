@@ -22,7 +22,7 @@ class Geodesic {
     this.rotX = 0;
     this.rotY = 0;
     this.rotZ = 0;
-    this.step = 15;
+    this.step = Math.PI/12;
     this.zoom = 1;
   }
 
@@ -31,10 +31,40 @@ class Geodesic {
     this.element.height = height;
   }
 
-  render = () => {}
+  generateCube = (size: number) => {
+    for (let i = -1; i < 2; i+=2) {
+      for (let j = -1; j < 2; j+=2) {
+        for (let k = -1; k < 2; k+=2) {
+          this.nodes.push(new GeoNode(i*size, j*size, k*size));
+        }
+      }
+    }
+  }
+
+  private calculateRotation = (x: number, y: number, z: number): GeoNode => {
+    const sX = Math.sin(this.rotX*this.step);
+    const cX = Math.cos(this.rotX*this.step);
+    const sY = Math.sin(this.rotY*this.step);
+    const cY = Math.cos(this.rotY*this.step);
+    const sZ = Math.sin(this.rotZ*this.step);
+    const cZ = Math.cos(this.rotZ*this.step);
+    const nX = x*cX*cY + y*cX*sY*sZ - y*sX*cZ + z*cX*sY*cZ + z*sX*sZ;
+    const nY = x*sX*cY + y*sX*sY*sZ + y*cX*cZ + z*sX*sY*cZ - z*cX*sZ;
+    const nZ = -x*sY + y*cY*sZ + z*cY*cZ;
+    const node = new GeoNode(nX, nY, nZ);
+    return node;
+  }
+
+  render = () => {
+    this.drawCanvas.clearCanvas();
+    this.drawCanvas.drawNodes(this.nodes.map(node => this.calculateRotation(node.x, node.y, node.z)));
+  }
 
   rotate = (axis: string, isPositive: boolean) => {
-    console.log(`Rotated in the ${isPositive ? "+" : "-"} ${axis} direction...`);
+    if (axis === "x") this.rotX += isPositive ? this.step : -this.step;
+    if (axis === "y") this.rotY += isPositive ? this.step : -this.step;
+    if (axis === "z") this.rotZ += isPositive ? this.step : -this.step;
+    this.render();
   }
 }
 

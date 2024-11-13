@@ -14,6 +14,12 @@ class DrawCanvas {
     this.centerY = height/2;
   }
 
+  clearCanvas = () => {
+    if (!this.ctx) return;
+    this.ctx.fillStyle = "white";
+    this.ctx.fillRect(0, 0, this.width, this.height);
+  }
+
   drawNodes = (nodes: GeoNode[]) => {
     const behind: GeoNode[] = [];
     for (let i = 0; i < nodes.length; i++) {
