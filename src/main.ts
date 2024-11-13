@@ -32,5 +32,5 @@ for (let i = 0; i < navElements.length; i++) {
   });
 }
 
-geo.generateCube(100);
+geo.generateCube(200);
 geo.render();
