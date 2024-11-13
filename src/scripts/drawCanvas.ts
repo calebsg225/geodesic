@@ -1,3 +1,4 @@
+import GeoEdge from "./geodesic/edge";
 import GeoNode from "./geodesic/node";
 
 class DrawCanvas {
@@ -36,6 +37,12 @@ class DrawCanvas {
       const y = this.centerY + behind[i].y;
       this.drawCircle(x, y, behind[i].size, behind[i].color);
     }
+  }
+
+  drawEdges = (edges: GeoEdge[]) =>  {
+    const behind: GeoNode[] = [];
+    for (let i = 0; i < edges.length; i++) {}
+    for (let i = 0; i < behind.length; i++) {}
   }
 
   private drawCircle = (x: number, y: number, size: number, color: string) => {

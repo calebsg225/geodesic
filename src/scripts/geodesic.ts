@@ -41,6 +41,9 @@ class Geodesic {
     }
   }
 
+
+  // takes x,y,z coords of a node and calculates its new position in 3d space projected 
+  // onto a 2d plane based on rotation values in each x,y,z direction
   private calculateRotation = (x: number, y: number, z: number): GeoNode => {
     const sX = Math.sin(this.rotX*this.step);
     const cX = Math.cos(this.rotX*this.step);
@@ -57,7 +60,8 @@ class Geodesic {
 
   render = () => {
     this.drawCanvas.clearCanvas();
-    this.drawCanvas.drawNodes(this.nodes.map(node => this.calculateRotation(node.x, node.y, node.z)));
+    const newNodes = this.nodes.map(node => this.calculateRotation(node.x, node.y, node.z));
+    this.drawCanvas.drawNodes(newNodes);
   }
 
   rotate = (axis: string, isPositive: boolean) => {

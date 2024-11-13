@@ -1,17 +1,5 @@
-# [geodesic calculator](https://calebsg225.github.io/geodesic)
-## description
-- simple web interface for icosahedral geodesic dome and sphere calculation
+# [Geodesic Calculator](https://calebsg225.github.io/geodesic)
+- A web interface for geodesic dome and sphere calculation
 
-## calculations
-- covers 1V to ??V frequencies
-- strut count
-- strut lengths
-- intersection counts
-- diameter from inputed strut length && vice versa
-
-## displays
-- 3d representation of sphere or dome
-
-## future
-- tetrahedral calculations?
-- octahedral calculations?
+## Background
+I coded the first version of this program in TI-basic on my TI-84 graphing calculator a few years prior to starting this project.

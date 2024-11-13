@@ -15,7 +15,7 @@ const createNavSection = (navD: string) => {
 // main
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <canvas id="geodesic-canvas" class="border-4 border-black"></canvas>
-  <section id="geodesic-interface" class="border-4 flex">
+  <section id="geodesic-interface" class="flex">
     ${['x','y','z'].map(v => createNavSection(v)).join("")}
   </section>
 `;
