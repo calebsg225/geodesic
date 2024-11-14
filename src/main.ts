@@ -32,5 +32,6 @@ for (let i = 0; i < navElements.length; i++) {
   });
 }
 
-geo.generateCube(200);
+geo.setZoom(300);
+geo.generateIcosahedronBase();
 geo.render();

@@ -51,7 +51,7 @@ class DrawCanvas {
   }
 
   drawNodes = (nodes: GeoNode[]) => {
-    // TODO: sort by z, draw in z order from least to most
+    // TODO: render nodes and edges in tandum?
     const inFront: GeoNode[] = [];
     for (let i = 0; i < nodes.length; i++) {
       if (nodes[i].z >= 0) {
@@ -71,7 +71,9 @@ class DrawCanvas {
 
   drawEdges = (nodes: GeoNode[]) => {
     // TODO: sort by z intersection?, draw in z order from least to most
+    // maybe I don't need to do /\ this due to the nature of the render?
     const inFront: number[][] = [];
+    const inMiddle: number[][] = [];
     for (let i = 0; i < nodes.length; i++) {
       for (let j = 0; j < nodes[i].connections.length; j++) {
         if (nodes[i].connections[j] < i) continue;
@@ -81,13 +83,23 @@ class DrawCanvas {
         const dx = nodes[nodes[i].connections[j]].x + this.centerX;
         const dy = nodes[nodes[i].connections[j]].y + this.centerY;
         const dz = nodes[nodes[i].connections[j]].z;
-        if (this.averageZ(z, dz) > 0) {
+        const aZ = this.averageZ(z, dz);
+        if (aZ > 0) {
           inFront.push([x, y, dx, dy]);
+        } else if (aZ === 0) {
+          inMiddle.push([x, y, dx, dy]);
         } else {
+          // render back first
           this.drawEdge(x, y, dx, dy);
         }
       }
     }
+    // render middle second
+    for (let i = 0; i < inMiddle.length; i++) {
+      const [x, y, dx, dy] = inMiddle[i];
+      this.drawEdge(x, y, dx, dy);
+    }
+    // render fron third
     for (let i = 0; i < inFront.length; i++) {
       const [x, y, dx, dy] = inFront[i];
       this.drawEdge(x, y, dx, dy);

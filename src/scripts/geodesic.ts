@@ -4,12 +4,12 @@ import GeoNode from "./geodesic/node";
 class Geodesic {
   drawCanvas: DrawCanvas;
   element: HTMLCanvasElement;
-  nodes: GeoNode[];
-  rotX: number;
-  rotY: number;
-  rotZ: number;
-  zoom: number;
-  step: number;
+  private nodes: GeoNode[];
+  private rotX: number;
+  private rotY: number;
+  private rotZ: number;
+  private zoom: number;
+  private step: number;
   constructor(element: HTMLCanvasElement, width: number, height: number) {
     this.drawCanvas = new DrawCanvas(element, width, height);
     element.width = width;
@@ -23,6 +23,43 @@ class Geodesic {
     this.zoom = 1;
   }
 
+  generateIcosahedronBase = () => {
+    // TODO: rethink this algo... Not good for long term...
+    //    x: 0     0      0      0
+    // X: y: 1/2   1/2   -1/2   -1/2
+    //    z: gr   -gr    -gr     gr
+
+    //    x: gr   -gr    -gr     gr
+    // Y: y: 0     0      0      0
+    //    z: 1/2   1/2   -1/2   -1/2
+
+    //    x: 1/2   1/2   -1/2   -1/2 
+    // Z: y: gr   -gr    -gr     gr
+    //    z: 0     0      0      0
+    const gr = (1+Math.sqrt(5))/4; // HALF golden ratio
+    for (let i = -.5; i <= .5; i++) {
+      for (let j = -gr; j <= gr; j+=gr*2) {
+        const v = i*this.zoom;
+        const w = j*this.zoom;
+        this.nodes.push(new GeoNode(0, v, w)); // x
+        this.nodes.push(new GeoNode(w, 0, v)); // y
+        this.nodes.push(new GeoNode(v, w, 0)); // z
+      }
+    }
+  }
+
+  generateCubeBase = () => {
+    for (let i = -1; i < 2; i+=2) {
+      for (let j = -1; j < 2; j+=2) {
+        for (let k = -1; k < 2; k+=2) {
+          this.nodes.push(new GeoNode(i*this.zoom, j*this.zoom, k*this.zoom, this.findBinDif(this.nodes.length)));
+        }
+      }
+    }
+  }
+
+  setZoom = (zoom: number) => this.zoom = zoom;
+
   updateCanvasSize = (width: number, height: number) => {
     this.element.width = width;
     this.element.height = height;
@@ -32,17 +69,6 @@ class Geodesic {
   private findBinDif = (bin: number): number[] => {
     return [bin ^ 0b001, bin ^ 0b010, bin ^ 0b100];
   }
-
-  generateCube = (size: number) => {
-    for (let i = -1; i < 2; i+=2) {
-      for (let j = -1; j < 2; j+=2) {
-        for (let k = -1; k < 2; k+=2) {
-          this.nodes.push(new GeoNode(i*size, j*size, k*size, this.findBinDif(this.nodes.length)));
-        }
-      }
-    }
-  }
-
 
   // takes x,y,z coords of a node and calculates its new position in 3d space projected 
   // onto a 2d plane based on rotation values in each x,y,z direction
@@ -63,7 +89,7 @@ class Geodesic {
   render = () => {
     this.drawCanvas.clearCanvas();
     const newNodes = this.nodes.map(node => this.calculateRotation(node.x, node.y, node.z, node.connections));
-    this.drawCanvas.drawEdges(newNodes);
+    //this.drawCanvas.drawEdges(newNodes);
     this.drawCanvas.drawNodes(newNodes);
   }
 
