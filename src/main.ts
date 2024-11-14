@@ -21,7 +21,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 `;
 
 const geoCanvas = document.querySelector<HTMLCanvasElement>('#geodesic-canvas')!;
-const geo = new Geodesic(geoCanvas, 800, 800);
+const geo = new Geodesic(geoCanvas, 800, 800, 200);
 
 // add click events for each nav button
 const navElements = document.querySelectorAll<HTMLButtonElement>('[data-nav]');
@@ -32,6 +32,4 @@ for (let i = 0; i < navElements.length; i++) {
   });
 }
 
-geo.setZoom(300);
-geo.generateIcosahedronBase();
 geo.render();

@@ -5,7 +5,7 @@
 class MinHeap {
   heap: number[];
   /**
-   * @param {number[]} nums sorts minHeap by data.sort
+   * @param {number[]} nums - sorts minHeap by data.sort
    */
   constructor(nums: number[]) {
     this.heap = [];
@@ -14,7 +14,7 @@ class MinHeap {
 
   /**
    * sorts array of nums into the minHeap
-   * @param {number[]} nums values to be sorted
+   * @param {number[]} nums - values to be sorted
    */
   private buildHeap = (nums: number[]) => {
     for (let i = 0; i < nums.length; i++) {
@@ -46,7 +46,7 @@ class MinHeap {
 
   /**
    * recursively moves digits lower in the tree until both children are larger
-   * @param i 
+   * @param {number} i 
    */
   private siftDown = (i: number): void => {
     if (i >= this.heap.length - 1) return;
@@ -63,7 +63,7 @@ class MinHeap {
 
   /**
    * inserts a number into the minHeap
-   * @param num 
+   * @param {number} num 
    */
   insert = (num: number) => {
     this.heap.push(num);
@@ -72,7 +72,7 @@ class MinHeap {
 
   /**
    * removes and returns the smallest value in the heap
-   * @returns 
+   * @returns {number} - smallest value removed from heap
    */
   remove = (): number => {
     this.swap(0, this.heap.length - 1);

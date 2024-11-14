@@ -50,25 +50,28 @@ class DrawCanvas {
     this.ctx.stroke();
   }
 
-  drawNodes = (nodes: GeoNode[]) => {
+  drawNodes = (nodes: Map<string, GeoNode>) => {
     // TODO: render nodes and edges in tandum?
-    const inFront: GeoNode[] = [];
-    for (let i = 0; i < nodes.length; i++) {
-      if (nodes[i].z >= 0) {
-        inFront.push(nodes[i]);
-        continue;
+    // keys of nodes to generate after
+    const inFront: string[] = [];
+    nodes.forEach((node, key) => {
+      if (node.z >= 0) {
+        inFront.push(key);
+        return;
       }
-      const x = this.centerX + nodes[i].x;
-      const y = this.centerY + nodes[i].y;
-      this.drawNode(x, y, nodes[i].size, nodes[i].color);
-    }
+      const x = this.centerX + node.x;
+      const y = this.centerY + node.y;
+      this.drawNode(x, y, node.size, node.color);
+    });
     for (let i = 0; i < inFront.length; i++) {
-      const x = this.centerX + inFront[i].x;
-      const y = this.centerY + inFront[i].y;
-      this.drawNode(x, y, inFront[i].size, inFront[i].color);
+      const node = nodes.get(inFront[i])!;
+      const x = this.centerX + node.x;
+      const y = this.centerY + node.y;
+      this.drawNode(x, y, node.size, node.color);
     }
   }
 
+  // may not be required any more due to the new structure of nodes as a Map
   drawEdges = (nodes: GeoNode[]) => {
     // TODO: sort by z intersection?, draw in z order from least to most
     // maybe I don't need to do /\ this due to the nature of the render?
