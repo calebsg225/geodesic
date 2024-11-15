@@ -80,7 +80,7 @@ class Geodesic {
     ]
     for (const icoVert of icoData) {
       const {id, x, y, z, cons} = icoVert;
-      icosahedronBase.set(id, new GeoNode(x/r * this.zoom, y/r * this.zoom, z/r * this.zoom, cons.split('')));
+      icosahedronBase.set(id, new GeoNode(x/r, y/r, z/r, cons.split('')));
     }
     return icosahedronBase;
   }
@@ -91,15 +91,21 @@ class Geodesic {
     for (let i = -1; i < 2; i+=2) {
       for (let j = -1; j < 2; j+=2) {
         for (let k = -1; k < 2; k+=2) {
-          cubeBase.set(cubeBase.size + '', new GeoNode(i/r*this.zoom, j/r*this.zoom, k/r*this.zoom, this.findBinDif(cubeBase.size)));
+          cubeBase.set(cubeBase.size + '', new GeoNode(i/r, j/r, k/r, this.findBinDif(cubeBase.size)));
         }
       }
     }
     return cubeBase;
   }
 
+  /**
+   * sets new zoom value
+   * rerenders with new zoom value
+   * @param zoom 
+   */
   setZoom = (zoom: number) => {
     this.zoom = zoom;
+    this.render();
   };
 
   updateCanvasSize = (width: number, height: number) => {
@@ -147,7 +153,7 @@ class Geodesic {
     this.drawCanvas.clearCanvas();
     const newNodes: Geo = new Map();
     this.nodes.forEach((node, key) => {
-      newNodes.set(key, this.calculateRotation(node.x, node.y, node.z, node.connections));
+      newNodes.set(key, this.calculateRotation(node.x* this.zoom, node.y * this.zoom, node.z * this.zoom, node.connections));
     });
     this.drawCanvas.drawNodes(newNodes);
   }
