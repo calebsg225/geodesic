@@ -21,7 +21,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 `;
 
 const geoCanvas = document.querySelector<HTMLCanvasElement>('#geodesic-canvas')!;
-const geo = new Geodesic(geoCanvas, 800, 800, 200);
+const geo = new Geodesic(geoCanvas, 800, 800, 300);
 
 // add click events for each nav button
 const navElements = document.querySelectorAll<HTMLButtonElement>('[data-nav]');

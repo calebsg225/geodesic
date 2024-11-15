@@ -1,14 +1,13 @@
 import DrawCanvas from './DrawCanvas';
 import GeoNode from "./geodesic/node";
 
-type GeoBase = Map<string, GeoNode>;
-type Geo = GeoBase;
+type Geo = Map<string, GeoNode>;
 type BaseType = 'cube' | 'icosahedron' | 'tetrahedron';
 
 class Geodesic {
   drawCanvas: DrawCanvas;
   element: HTMLCanvasElement;
-  private bases: Map<BaseType, GeoBase>;
+  private bases: Map<BaseType, Geo>;
   private baseType: BaseType;
   private nodes: Geo;
   private rotX: number;
@@ -16,6 +15,7 @@ class Geodesic {
   private rotZ: number;
   private zoom: number;
   private step: number;
+  private frequency: number;
   constructor(element: HTMLCanvasElement, width: number, height: number, zoom: number) {
     this.drawCanvas = new DrawCanvas(element, width, height);
     element.width = width;
@@ -29,7 +29,15 @@ class Geodesic {
     this.rotZ = 2*this.step;
     this.zoom = zoom;
     this.bases = new Map();
+    this.frequency = 1;
+    this.init();
+  }
+
+  private init = () => {
+    // create all bases
     this.generateBases();
+    // generate default nodes
+    this.generateGeo();
   }
 
   private generateBases = (): void => {
@@ -37,43 +45,62 @@ class Geodesic {
     this.bases.set('icosahedron', this.generateIcosahedronBase());
   }
 
-  generateIcosahedronBase = (): GeoBase => {
-    const icosahedronBase: GeoBase = new Map();
-    const gr = (1+Math.sqrt(5))/4; // HALF golden ratio
+  /**
+   * distance formula (3d)
+   * @param x 
+   * @param y 
+   * @param z 
+   * @param dx 
+   * @param dy 
+   * @param dz 
+   * @returns 
+   */
+  private distanceF = (x: number, y: number, z: number, dx: number, dy: number, dz: number): number => {
+    return Math.sqrt((dx - x)**2 + (dy - y)**2 + (dz - z)**2);
+  }
+
+  generateIcosahedronBase = (): Geo => {
+    const icosahedronBase: Geo = new Map();
+    const g = (1+Math.sqrt(5))/4; // HALF golden ratio
+    const n = .5;
+    const r = this.distanceF(0, .5, g, 0, 0, 0);
     const icoData = [
-      {id: 'a', x: 0  , y: -.5, z: -gr, cons: 'bcdef'},
-      {id: 'b', x: -gr, y: 0  , z: -.5, cons: 'acfgh'},
-      {id: 'c', x: -.5, y: -gr, z: 0  , cons: 'abdhi'},
-      {id: 'd', x: 0  , y: -.5, z: gr , cons: 'aceij'},
-      {id: 'e', x: gr , y: 0  , z: -.5, cons: 'adfjk'},
-      {id: 'f', x: -.5, y: gr , z: 0  , cons: 'abegk'},
-      {id: 'g', x: 0  , y: .5 , z: -gr, cons: 'bfhkl'},
-      {id: 'h', x: -gr, y: 0  , z: .5 , cons: 'bcgil'},
-      {id: 'i', x: .5 , y: -gr, z: 0  , cons: 'cdhjl'},
-      {id: 'j', x: 0  , y: .5 , z: gr , cons: 'deikl'},
-      {id: 'k', x: gr , y: 0  , z: .5 , cons: 'efgjl'},
-      {id: 'l', x: .5 , y: gr , z: 0  , cons: 'ghijk'},
+      {id: 'a', x: 0  , y: -n , z: -g , cons: 'bcdef'},
+      {id: 'b', x: -g , y: 0  , z: -n , cons: 'acfgh'},
+      {id: 'c', x: -n , y: -g , z: 0  , cons: 'abdhi'},
+      {id: 'd', x: 0  , y: -n , z: g  , cons: 'aceij'},
+      {id: 'e', x: g  , y: 0  , z: -n , cons: 'adfjk'},
+      {id: 'f', x: -n , y: g  , z: 0  , cons: 'abegk'},
+      {id: 'g', x: 0  , y: n  , z: -g , cons: 'bfhkl'},
+      {id: 'h', x: -g , y: 0  , z: n  , cons: 'bcgil'},
+      {id: 'i', x: n  , y: -g , z: 0  , cons: 'cdhjl'},
+      {id: 'j', x: 0  , y: n  , z: g  , cons: 'deikl'},
+      {id: 'k', x: g  , y: 0  , z: n  , cons: 'efgjl'},
+      {id: 'l', x: n  , y: g  , z: 0  , cons: 'ghijk'},
     ]
     for (const icoVert of icoData) {
       const {id, x, y, z, cons} = icoVert;
-      icosahedronBase.set(id, new GeoNode(x * this.zoom, y * this.zoom, z * this.zoom, cons.split('')));
+      icosahedronBase.set(id, new GeoNode(x/r * this.zoom, y/r * this.zoom, z/r * this.zoom, cons.split('')));
     }
     return icosahedronBase;
   }
 
-  generateCubeBase = (): GeoBase => {
-    const cubeBase: GeoBase = new Map();
+  generateCubeBase = (): Geo => {
+    const cubeBase: Geo = new Map();
+    const r = Math.sqrt(3); // use r to make each coord 
     for (let i = -1; i < 2; i+=2) {
       for (let j = -1; j < 2; j+=2) {
         for (let k = -1; k < 2; k+=2) {
-          cubeBase.set(cubeBase.size + '', new GeoNode(i*this.zoom, j*this.zoom, k*this.zoom, this.findBinDif(cubeBase.size)));
+          cubeBase.set(cubeBase.size + '', new GeoNode(i/r*this.zoom, j/r*this.zoom, k/r*this.zoom, this.findBinDif(cubeBase.size)));
         }
       }
     }
     return cubeBase;
   }
 
-  setZoom = (zoom: number) => this.zoom = zoom;
+  setZoom = (zoom: number) => {
+    this.zoom = zoom;
+  };
 
   updateCanvasSize = (width: number, height: number) => {
     this.element.width = width;
@@ -103,12 +130,23 @@ class Geodesic {
 
   setBase = (baseType: BaseType) => {
     this.baseType = baseType;
+    this.generateGeo();
+  }
+
+  /**
+   * generate all nodes in the geodesic structure at the given frequency
+   * @param v frequency of geodesic structure
+   */
+  private generateGeo = () => {
+    if (this.frequency === 1) {
+      this.nodes = this.bases.get(this.baseType)!;
+    }
   }
 
   render = () => {
     this.drawCanvas.clearCanvas();
     const newNodes: Geo = new Map();
-    this.bases.get(this.baseType)!.forEach((node, key) => {
+    this.nodes.forEach((node, key) => {
       newNodes.set(key, this.calculateRotation(node.x, node.y, node.z, node.connections));
     });
     this.drawCanvas.drawNodes(newNodes);
