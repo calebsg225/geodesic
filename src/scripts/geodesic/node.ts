@@ -4,8 +4,8 @@ class GeoNode {
   z: number;
   color: string;
   size: number;
-  connections: number[];
-  constructor(x: number, y: number, z: number, connections: number[] = []) {
+  connections: string[];
+  constructor(x: number, y: number, z: number, connections: string[] = []) {
     this.x = x;
     this.y = y;
     this.z = z;

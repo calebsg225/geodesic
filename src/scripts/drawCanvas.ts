@@ -72,6 +72,7 @@ class DrawCanvas {
   }
 
   // may not be required any more due to the new structure of nodes as a Map
+  // TODO: remake, no longer valid
   drawEdges = (nodes: GeoNode[]) => {
     // TODO: sort by z intersection?, draw in z order from least to most
     // maybe I don't need to do /\ this due to the nature of the render?
@@ -79,13 +80,13 @@ class DrawCanvas {
     const inMiddle: number[][] = [];
     for (let i = 0; i < nodes.length; i++) {
       for (let j = 0; j < nodes[i].connections.length; j++) {
-        if (nodes[i].connections[j] < i) continue;
+        if (+nodes[i].connections[j] < i) continue;
         const x = nodes[i].x + this.centerX;
         const y = nodes[i].y + this.centerY;
         const z = nodes[i].z;
-        const dx = nodes[nodes[i].connections[j]].x + this.centerX;
-        const dy = nodes[nodes[i].connections[j]].y + this.centerY;
-        const dz = nodes[nodes[i].connections[j]].z;
+        const dx = nodes[+nodes[i].connections[j]].x + this.centerX;
+        const dy = nodes[+nodes[i].connections[j]].y + this.centerY;
+        const dz = nodes[+nodes[i].connections[j]].z;
         const aZ = this.averageZ(z, dz);
         if (aZ > 0) {
           inFront.push([x, y, dx, dy]);
