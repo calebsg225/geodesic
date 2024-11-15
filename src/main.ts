@@ -32,4 +32,5 @@ for (let i = 0; i < navElements.length; i++) {
   });
 }
 
+geo.setBase('icosahedron');
 geo.render();

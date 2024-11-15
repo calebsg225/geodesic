@@ -38,33 +38,26 @@ class Geodesic {
   }
 
   generateIcosahedronBase = (): GeoBase => {
-    //    x: 0     0      0      0
-    // X: y: 1/2   1/2   -1/2   -1/2
-    //    z: gr   -gr    -gr     gr
-
-    //    x: gr   -gr    -gr     gr
-    // Y: y: 0     0      0      0
-    //    z: 1/2   1/2   -1/2   -1/2
-
-    //    x: 1/2   1/2   -1/2   -1/2 
-    // Z: y: gr   -gr    -gr     gr
-    //    z: 0     0      0      0
     const icosahedronBase: GeoBase = new Map();
     const gr = (1+Math.sqrt(5))/4; // HALF golden ratio
-    for (let i = -.5; i <= .5; i++) {
-      for (let j = -gr; j <= gr; j+=gr*2) {
-        //const v = i*this.zoom;
-        //const w = j*this.zoom;
-        //this.nodes.set(new GeoNode(0, v, w)); // x  adgl
-        //this.nodes.set(new GeoNode(w, 0, v)); // y  bfij
-        //this.nodes.set(new GeoNode(v, w, 0)); // z  chek
-      }
+    const icoData = [
+      {id: 'a', x: 0  , y: -.5, z: -gr, cons: 'bcdef'},
+      {id: 'b', x: -gr, y: 0  , z: -.5, cons: 'acfgh'},
+      {id: 'c', x: -.5, y: -gr, z: 0  , cons: 'abdhi'},
+      {id: 'd', x: 0  , y: -.5, z: gr , cons: 'aceij'},
+      {id: 'e', x: gr , y: 0  , z: -.5, cons: 'adfjk'},
+      {id: 'f', x: -.5, y: gr , z: 0  , cons: 'abegk'},
+      {id: 'g', x: 0  , y: .5 , z: -gr, cons: 'bfhkl'},
+      {id: 'h', x: -gr, y: 0  , z: .5 , cons: 'bcgil'},
+      {id: 'i', x: .5 , y: -gr, z: 0  , cons: 'cdhjl'},
+      {id: 'j', x: 0  , y: .5 , z: gr , cons: 'deikl'},
+      {id: 'k', x: gr , y: 0  , z: .5 , cons: 'efgjl'},
+      {id: 'l', x: .5 , y: gr , z: 0  , cons: 'ghijk'},
+    ]
+    for (const icoVert of icoData) {
+      const {id, x, y, z, cons} = icoVert;
+      icosahedronBase.set(id, new GeoNode(x * this.zoom, y * this.zoom, z * this.zoom, cons.split('')));
     }
-    const chars = 'abcdefghijkl';
-    for (let i = 0; i < 12; i++) {
-      // create new node
-    }
-
     return icosahedronBase;
   }
 
