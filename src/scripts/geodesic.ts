@@ -91,7 +91,7 @@ class Geodesic {
     for (let i = -1; i < 2; i+=2) {
       for (let j = -1; j < 2; j+=2) {
         for (let k = -1; k < 2; k+=2) {
-          cubeBase.set(cubeBase.size + '', new GeoNode(i/r, j/r, k/r, this.findBinDif(cubeBase.size)));
+          cubeBase.set(cubeBase.size + '', new GeoNode(i/r, j/r, k/r, this.getCubeConnections(cubeBase.size)));
         }
       }
     }
@@ -113,9 +113,17 @@ class Geodesic {
     this.element.height = height;
   }
 
-  // uses xor to find the correct edge connections for each node
-  private findBinDif = (bin: number): string[] => {
+  // given an integer 1-7 inclusive, returns connected cube vertices
+  private getCubeConnections = (bin: number): string[] => {
     return [bin ^ 0b001, bin ^ 0b010, bin ^ 0b100].join('-').split('-');
+  }
+
+  // given an integer 0-11 inclusive, returns connected icosahedron vertices
+  private getIcosahedronConnections = (v: number): string[] => {
+    const gT = (n: number) => (n^1)%12;
+    const gM = (n: number) => 4*((Math.floor(n/4) + 1)%3) + Math.floor(n/2)%2;
+    const gB = (n: number) => 4*((Math.floor(n/4) + 2)%3) + 2*(n%2);
+    return [gT(v), gM(v), gM(v) + 2, gB(v), gB(v)+1].join('-').split('-');
   }
 
   // takes x,y,z coords of a node and calculates its new position in 3d space projected 
