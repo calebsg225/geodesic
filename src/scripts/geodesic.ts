@@ -64,23 +64,26 @@ class Geodesic {
     const g = (1+Math.sqrt(5))/4; // HALF golden ratio
     const n = .5;
     const r = this.distanceF(0, .5, g, 0, 0, 0);
-    const icoData = [
-      {id: 'a', x: 0  , y: -n , z: -g , cons: 'bcdef'},
-      {id: 'b', x: -g , y: 0  , z: -n , cons: 'acfgh'},
-      {id: 'c', x: -n , y: -g , z: 0  , cons: 'abdhi'},
-      {id: 'd', x: 0  , y: -n , z: g  , cons: 'aceij'},
-      {id: 'e', x: g  , y: 0  , z: -n , cons: 'adfjk'},
-      {id: 'f', x: -n , y: g  , z: 0  , cons: 'abegk'},
-      {id: 'g', x: 0  , y: n  , z: -g , cons: 'bfhkl'},
-      {id: 'h', x: -g , y: 0  , z: n  , cons: 'bcgil'},
-      {id: 'i', x: n  , y: -g , z: 0  , cons: 'cdhjl'},
-      {id: 'j', x: 0  , y: n  , z: g  , cons: 'deikl'},
-      {id: 'k', x: g  , y: 0  , z: n  , cons: 'efgjl'},
-      {id: 'l', x: n  , y: g  , z: 0  , cons: 'ghijk'},
-    ]
-    for (const icoVert of icoData) {
-      const {id, x, y, z, cons} = icoVert;
-      icosahedronBase.set(id, new GeoNode(x/r, y/r, z/r, cons.split('')));
+    const setNode = (x: number, y: number, z: number, v: number) => {
+      icosahedronBase.set(this.mapToChars([v]).join(''), new GeoNode(x, y, z, this.mapToChars(this.getIcosahedronConnections(v))));
+    }
+    // calculate values on x plane
+    for (let i = 0; i <= 3; i++) {
+      const y = g*(2*Math.floor(i/2) - 1);
+      const z = n*(2*(i%2) - 1);
+      setNode(0, y/r, z/r, i);
+    }
+    // calculate values on z plane
+    for (let i = 4; i <= 7; i++) {
+      const x = g*(2*Math.floor((i%4)/2) - 1);
+      const y = n*(2*(i%2) - 1);
+      setNode(x/r, y/r, 0, i);
+    }
+    // calculate values on y plane
+    for (let i = 8; i <= 11; i++) {
+      const x = n*(2*(i%2) - 1);
+      const z = g*(2*Math.floor((i%4)/2) - 1);
+      setNode(x/r, 0, z/r, i);
     }
     return icosahedronBase;
   }
@@ -91,7 +94,7 @@ class Geodesic {
     for (let i = -1; i < 2; i+=2) {
       for (let j = -1; j < 2; j+=2) {
         for (let k = -1; k < 2; k+=2) {
-          cubeBase.set(cubeBase.size + '', new GeoNode(i/r, j/r, k/r, this.getCubeConnections(cubeBase.size)));
+          cubeBase.set(cubeBase.size + '', new GeoNode(i/r, j/r, k/r, this.mapToChars(this.getCubeConnections(cubeBase.size))));
         }
       }
     }
@@ -113,17 +116,21 @@ class Geodesic {
     this.element.height = height;
   }
 
-  // given an integer 1-7 inclusive, returns connected cube vertices
-  private getCubeConnections = (bin: number): string[] => {
-    return [bin ^ 0b001, bin ^ 0b010, bin ^ 0b100].join('-').split('-');
+  private mapToChars = (nums: number[]): string[] => {
+    return nums.map(num => String.fromCharCode(num + 'a'.charCodeAt(0)));
+  }
+
+  // given an integer 0-7 inclusive, returns connected cube vertices
+  private getCubeConnections = (bin: number): number[] => {
+    return [bin ^ 0b001, bin ^ 0b010, bin ^ 0b100];
   }
 
   // given an integer 0-11 inclusive, returns connected icosahedron vertices
-  private getIcosahedronConnections = (v: number): string[] => {
+  private getIcosahedronConnections = (v: number): number[] => {
     const gT = (n: number) => (n^1)%12;
     const gM = (n: number) => 4*((Math.floor(n/4) + 1)%3) + Math.floor(n/2)%2;
     const gB = (n: number) => 4*((Math.floor(n/4) + 2)%3) + 2*(n%2);
-    return [gT(v), gM(v), gM(v) + 2, gB(v), gB(v)+1].join('-').split('-');
+    return [gT(v), gM(v), gM(v) + 2, gB(v), gB(v)+1];
   }
 
   // takes x,y,z coords of a node and calculates its new position in 3d space projected 
