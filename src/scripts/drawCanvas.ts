@@ -1,12 +1,15 @@
 import GeoNode from "./geodesic/node";
+import Utils from "./helpers/Utils";
 
 class DrawCanvas {
+  private utils: Utils;
   ctx: CanvasRenderingContext2D | null;
   width: number;
   height: number;
   centerX: number;
   centerY: number;
   constructor(element: HTMLCanvasElement, width: number, height: number) {
+    this.utils = new Utils();
     this.ctx = element.getContext('2d');
     this.width = width;
     this.height = height;
@@ -68,6 +71,14 @@ class DrawCanvas {
       const x = this.centerX + node.x;
       const y = this.centerY + node.y;
       this.drawNode(x, y, node.size, node.color);
+    }
+  }
+
+  drawEdges2 = (nodes: Map<string, GeoNode>): void => {
+    for (const k of Object.keys(nodes)) {
+      for (let j = 0; j < nodes.get(k)!.connections.length; j++) {
+
+      }
     }
   }
 
