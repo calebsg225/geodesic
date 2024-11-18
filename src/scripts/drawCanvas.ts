@@ -34,7 +34,7 @@ class DrawCanvas {
     this.ctx.stroke();
   }
 
-  private drawEdge = (x: number, y: number, dx: number, dy: number) => {
+  private drawEdge = (x: number, y: number, dx: number, dy: number, color: string) => {
     if (!this.ctx) return;
     this.ctx.beginPath();
     this.ctx.moveTo(x, y);
@@ -43,7 +43,7 @@ class DrawCanvas {
     this.ctx.strokeStyle = 'black';
     this.ctx.stroke();
     this.ctx.lineWidth = 6;
-    this.ctx.strokeStyle = 'red';
+    this.ctx.strokeStyle = color;
     this.ctx.lineTo(x, y);
     this.ctx.stroke();
   }
@@ -90,7 +90,7 @@ class DrawCanvas {
           inMiddle.push([x, y, dx, dy]);
         } else {
           // render back first
-          this.drawEdge(x, y, dx, dy);
+          this.drawEdge(x, y, dx, dy, '#FF877E');
         }
       }
     }
@@ -98,7 +98,7 @@ class DrawCanvas {
     // render middle second, render front third
     for (let i = 0; i < inMiddle.length; i++) {
       const [x, y, dx, dy] = inMiddle[i];
-      this.drawEdge(x, y, dx, dy);
+      this.drawEdge(x, y, dx, dy, 'red');
     }
   }
 }

@@ -28,8 +28,8 @@ class Geodesic {
     this.nodes = new Map();
     this.step = Math.PI/12;
     this.rotX = 0;
-    this.rotY = 2*this.step;
-    this.rotZ = 2*this.step;
+    this.rotY = -2*this.step;
+    this.rotZ = -2*this.step;
     this.zoom = zoom;
     this.bases = new Map();
     this.frequency = 1;
