@@ -17,8 +17,17 @@ class Utils {
     return Math.sqrt((dx - x)**2 + (dy - y)**2 + (dz - z)**2);
   }
 
+  numFromChar = (str: string): number => {
+    return str.charCodeAt(0) - 'a'.charCodeAt(0);
+  }
+
   mapChar = (num: number): string => {
     return String.fromCharCode(num + 'a'.charCodeAt(0));
+  }
+
+  // temp algo for general edge sorting
+  averageZ = (z: number, dz: number): number => {
+    return (z + dz) / 2;
   }
 
   mapToChars = (nums: number[]): string[] => {

@@ -165,6 +165,7 @@ class Geodesic {
         this.step
       ));
     });
+    this.drawCanvas.drawEdges(newNodes);
     this.drawCanvas.drawNodes(newNodes);
   }
 

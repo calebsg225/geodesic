@@ -17,11 +17,6 @@ class DrawCanvas {
     this.centerY = height/2;
   }
 
-  // temp algo for general edge sorting
-  private averageZ = (z: number, dz: number): number => {
-    return (z + dz) / 2;
-  }
-
   clearCanvas = () => {
     if (!this.ctx) return;
     this.ctx.fillStyle = "white";
@@ -74,31 +69,21 @@ class DrawCanvas {
     }
   }
 
-  drawEdges2 = (nodes: Map<string, GeoNode>): void => {
-    for (const k of Object.keys(nodes)) {
-      for (let j = 0; j < nodes.get(k)!.connections.length; j++) {
-
-      }
-    }
-  }
-
-  // may not be required any more due to the new structure of nodes as a Map
-  // TODO: remake, no longer valid
-  drawEdges = (nodes: GeoNode[]) => {
-    // TODO: sort by z intersection?, draw in z order from least to most
-    // maybe I don't need to do /\ this due to the nature of the render?
+  drawEdges = (nodes: Map<string, GeoNode>): void => {
     const inFront: number[][] = [];
     const inMiddle: number[][] = [];
-    for (let i = 0; i < nodes.length; i++) {
-      for (let j = 0; j < nodes[i].connections.length; j++) {
-        if (+nodes[i].connections[j] < i) continue;
-        const x = nodes[i].x + this.centerX;
-        const y = nodes[i].y + this.centerY;
-        const z = nodes[i].z;
-        const dx = nodes[+nodes[i].connections[j]].x + this.centerX;
-        const dy = nodes[+nodes[i].connections[j]].y + this.centerY;
-        const dz = nodes[+nodes[i].connections[j]].z;
-        const aZ = this.averageZ(z, dz);
+    for (const k of nodes.keys()) {
+      const node = nodes.get(k)!;
+      const cons = node.connections;
+      for (let j = 0; j < cons.length; j++) {
+        if (this.utils.numFromChar(cons[j]) < this.utils.numFromChar(k)) continue;
+        const x = node.x + this.centerX;
+        const y = node.y + this.centerY;
+        const z = node.z;
+        const dx = nodes.get(cons[j])!.x + this.centerX;
+        const dy = nodes.get(cons[j])!.y + this.centerY;
+        const dz = nodes.get(cons[j])!.z;
+        const aZ = this.utils.averageZ(z, dz);
         if (aZ > 0) {
           inFront.push([x, y, dx, dy]);
         } else if (aZ === 0) {
@@ -109,14 +94,10 @@ class DrawCanvas {
         }
       }
     }
-    // render middle second
+    inMiddle.push(...inFront);
+    // render middle second, render front third
     for (let i = 0; i < inMiddle.length; i++) {
       const [x, y, dx, dy] = inMiddle[i];
-      this.drawEdge(x, y, dx, dy);
-    }
-    // render fron third
-    for (let i = 0; i < inFront.length; i++) {
-      const [x, y, dx, dy] = inFront[i];
       this.drawEdge(x, y, dx, dy);
     }
   }
