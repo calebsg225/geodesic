@@ -1,3 +1,4 @@
+import { NodeConnections } from "../../types/geodesicTypes";
 import GeoNode from "../geodesic/node";
 
 class Utils {
@@ -34,11 +35,23 @@ class Utils {
     return nums.map(num => this.mapChar(num));
   }
 
+  /**
+   * 
+   * @param x 
+   * @param y 
+   * @param z 
+   * @param connections pass through
+   * @param rotX rotation around x axis
+   * @param rotY rotation around y axis
+   * @param rotZ rotation around z axis
+   * @param step radians rotated per rotation
+   * @returns 
+   */
   calculateRotation = (
     x: number, 
     y: number, 
     z: number, 
-    connections: string[],
+    connections: NodeConnections,
     rotX: number,
     rotY: number,
     rotZ: number,

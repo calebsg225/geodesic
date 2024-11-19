@@ -1,4 +1,4 @@
-import GeoNode from "./geodesic/node";
+import { Geo } from "../types/geodesicTypes";
 import Utils from "./helpers/Utils";
 
 class DrawCanvas {
@@ -48,7 +48,7 @@ class DrawCanvas {
     this.ctx.stroke();
   }
 
-  drawNodes = (nodes: Map<string, GeoNode>) => {
+  drawNodes = (nodes: Geo) => {
     // TODO: render nodes and edges in tandum?
     // keys of nodes to generate after
     const inFront: string[] = [];
@@ -69,20 +69,20 @@ class DrawCanvas {
     }
   }
 
-  drawEdges = (nodes: Map<string, GeoNode>): void => {
+  drawEdges = (nodes: Geo): void => {
     const inFront: number[][] = [];
     const inMiddle: number[][] = [];
     for (const k of nodes.keys()) {
       const node = nodes.get(k)!;
-      const cons = node.connections;
-      for (let j = 0; j < cons.length; j++) {
-        if (this.utils.numFromChar(cons[j]) < this.utils.numFromChar(k)) continue;
+      const edges = node.connections.edges;
+      for (let j = 0; j < edges.length; j++) {
+        if (this.utils.numFromChar(edges[j]) < this.utils.numFromChar(k)) continue;
         const x = node.x + this.centerX;
         const y = node.y + this.centerY;
         const z = node.z;
-        const dx = nodes.get(cons[j])!.x + this.centerX;
-        const dy = nodes.get(cons[j])!.y + this.centerY;
-        const dz = nodes.get(cons[j])!.z;
+        const dx = nodes.get(edges[j])!.x + this.centerX;
+        const dy = nodes.get(edges[j])!.y + this.centerY;
+        const dz = nodes.get(edges[j])!.z;
         const aZ = this.utils.averageZ(z, dz);
         if (aZ > 0) {
           inFront.push([x, y, dx, dy]);

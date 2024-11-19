@@ -1,9 +1,7 @@
 import DrawCanvas from './DrawCanvas';
 import GeoNode from "./geodesic/node";
 import Utils from './helpers/Utils';
-
-type Geo = Map<string, GeoNode>;
-type BaseType = 'cube' | 'icosahedron' | 'tetrahedron';
+import { NodeConnections, Geo, BaseType } from '../types/geodesicTypes';
 
 class Geodesic {
   drawCanvas: DrawCanvas;
@@ -58,7 +56,7 @@ class Geodesic {
         this.utils.mapChar(v), 
         new GeoNode(
           x, y, z, 
-          this.utils.mapToChars(this.getIcosahedronConnections(v))
+          this.getIcosahedronConnections(v)
         )
       );
     }
@@ -93,7 +91,7 @@ class Geodesic {
             this.utils.mapChar(cubeBase.size), 
             new GeoNode(
               i/r, j/r, k/r, 
-              this.utils.mapToChars(this.getCubeConnections(cubeBase.size))
+              this.getCubeConnections(cubeBase.size)
             )
           );
         }
@@ -123,16 +121,22 @@ class Geodesic {
   }
 
   // given an integer 0-7 inclusive, returns connected cube vertices
-  private getCubeConnections = (bin: number): number[] => {
-    return [bin ^ 0b001, bin ^ 0b010, bin ^ 0b100];
+  private getCubeConnections = (bin: number): NodeConnections => {
+    return {
+      edges: this.utils.mapToChars([bin ^ 0b001, bin ^ 0b010, bin ^ 0b100]),
+      faces: this.utils.mapToChars([])
+    }
   }
 
   // given an integer 0-11 inclusive, returns connected icosahedron vertices
-  private getIcosahedronConnections = (v: number): number[] => {
+  private getIcosahedronConnections = (v: number): NodeConnections => {
     const gT = (n: number) => (n^1)%12;
     const gM = (n: number) => 4*((Math.floor(n/4) + 1)%3) + Math.floor(n/2)%2;
     const gB = (n: number) => 4*((Math.floor(n/4) + 2)%3) + 2*(n%2);
-    return [gT(v), gM(v), gM(v) + 2, gB(v), gB(v)+1];
+    return {
+      edges: this.utils.mapToChars([gT(v), gM(v), gM(v) + 2, gB(v), gB(v)+1]),
+      faces: this.utils.mapToChars([])
+    };
   }
 
   setBase = (baseType: BaseType) => {
