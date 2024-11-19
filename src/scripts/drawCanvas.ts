@@ -23,7 +23,7 @@ class DrawCanvas {
     this.ctx.fillRect(0, 0, this.width, this.height);
   }
 
-  private drawNode = (x: number, y: number, size: number, color: string) => {
+  private drawNode = (x: number, y: number, size: number, color: string): void => {
     if (!this.ctx) return;
     this.ctx.beginPath();
     this.ctx.arc(x, y, size, 0, 2*Math.PI);
@@ -34,7 +34,7 @@ class DrawCanvas {
     this.ctx.stroke();
   }
 
-  private drawEdge = (x: number, y: number, dx: number, dy: number, color: string) => {
+  private drawEdge = (x: number, y: number, dx: number, dy: number, color: string): void => {
     if (!this.ctx) return;
     this.ctx.beginPath();
     this.ctx.moveTo(x, y);
@@ -48,8 +48,23 @@ class DrawCanvas {
     this.ctx.stroke();
   }
 
-  drawNodes = (nodes: Geo) => {
-    // TODO: render nodes and edges in tandum?
+  private drawFace = (pairs: number[][], color: string): void => {
+    if (!this.ctx) return;
+    this.ctx.beginPath();
+    this.ctx.strokeStyle = 'black';
+    this.ctx.fillStyle = color;
+    this.ctx.lineWidth = 2;
+    this.ctx.moveTo(pairs[0][0], pairs[0][1]);
+    for (let i = 1; i < pairs.length; i++) {
+      this.ctx.lineTo(pairs[i][0], pairs[i][1]);
+    }
+    this.ctx.lineTo(pairs[0][0], pairs[0][1]);
+    this.ctx.fill();
+    this.ctx.stroke();
+  }
+
+  drawNodes = (nodes: Geo): void => {
+    // TODO: render nodes, edges, and faces in tandum?
     // keys of nodes to generate after
     const inFront: string[] = [];
     nodes.forEach((node, key) => {
@@ -99,6 +114,29 @@ class DrawCanvas {
     for (let i = 0; i < inMiddle.length; i++) {
       const [x, y, dx, dy] = inMiddle[i];
       this.drawEdge(x, y, dx, dy, 'red');
+    }
+  }
+
+  drawFaces = (nodes: Geo): void => {
+    const drawn = new Set();
+    for (const k of nodes.keys()) {
+      const node = nodes.get(k)!;
+      const faces = node.connections.faces;
+      for (let j = 0; j < faces.length; j++) {
+        if (drawn.has(faces[j])) continue;
+        const pairs: number[][] = [];
+        let z = 0;
+        for (const p of faces[j]) {
+          const x = nodes.get(p)!.x + this.centerX;
+          const y = nodes.get(p)!.y + this.centerY;
+          z += nodes.get(p)!.z;
+          pairs.push([x, y]);
+        }
+        if (z/3 >= 0) {
+          this.drawFace(pairs, 'red');
+        }
+        drawn.add(faces[j]);
+      }
     }
   }
 }
