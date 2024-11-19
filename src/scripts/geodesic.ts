@@ -120,22 +120,29 @@ class Geodesic {
     this.element.height = height;
   }
 
-  // given an integer 0-7 inclusive, returns connected cube vertices
+  // given an integer 0-7 inclusive, returns connected cube edges and faces
   private getCubeConnections = (bin: number): NodeConnections => {
     return {
       edges: this.utils.mapToChars([bin ^ 0b001, bin ^ 0b010, bin ^ 0b100]),
-      faces: this.utils.mapToChars([])
+      faces: []
     }
   }
 
-  // given an integer 0-11 inclusive, returns connected icosahedron vertices
+  // given an integer 0-11 inclusive, returns connected icosahedron edges and faces
   private getIcosahedronConnections = (v: number): NodeConnections => {
     const gT = (n: number) => (n^1)%12;
     const gM = (n: number) => 4*((Math.floor(n/4) + 1)%3) + Math.floor(n/2)%2;
     const gB = (n: number) => 4*((Math.floor(n/4) + 2)%3) + 2*(n%2);
+    this.utils.mapToChars([v, gT(v), gM(v)]).sort().join('')
     return {
       edges: this.utils.mapToChars([gT(v), gM(v), gM(v) + 2, gB(v), gB(v)+1]),
-      faces: this.utils.mapToChars([])
+      faces: [
+        [gT(v), gM(v)],
+        [gM(v), gB(v)],
+        [gB(v), gB(v) + 1],
+        [gB(v) + 1, gM(v) + 2],
+        [gM(v) + 2, gT(v)]
+      ].map(val => this.utils.mapToChars([v, ...val]).sort().join(''))
     };
   }
 
