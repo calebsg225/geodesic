@@ -82,7 +82,7 @@ class Geodesic {
           cubeBase.set(
             this.utils.mapChar(cubeBase.size), 
             new GeoNode(
-              i/r, j/r, k/r, 
+              i/r * this.zoom, j/r * this.zoom, k/r * this.zoom, 
               this.getCubeConnections(cubeBase.size)
             )
           );
