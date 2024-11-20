@@ -108,6 +108,8 @@ class Geodesic {
   private getCubeConnections = (bin: number): NodeConnections => {
     return {
       edges: this.utils.mapToChars([bin ^ 0b001, bin ^ 0b010, bin ^ 0b100]),
+      // TODO: calculate cube faces
+      // faces are in adjacent order. This matters when drawing non-triangle faces for the drawFace function.
       faces: []
     }
   }
@@ -126,7 +128,7 @@ class Geodesic {
         [gB(v), gB(v) + 1],
         [gB(v) + 1, gM(v) + 2],
         [gM(v) + 2, gT(v)]
-      ].map(val => this.utils.mapToChars([v, ...val]).sort().join(''))
+      ].map(val => this.utils.mapToChars([v, ...val]).join(''))
     };
   }
 
@@ -147,8 +149,8 @@ class Geodesic {
 
   render = () => {
     this.drawCanvas.clearCanvas();
-    //this.drawCanvas.drawFaces(this.nodes);
-    this.drawCanvas.drawEdges(this.nodes);
+    this.drawCanvas.drawFaces(this.nodes);
+    //this.drawCanvas.drawEdges(this.nodes);
     //this.drawCanvas.drawNodes(this.nodes);
   }
 
@@ -168,6 +170,7 @@ class Geodesic {
     this.render();
   }
 
+  // TODO: make zoom change the amount of rotation
   rotateMouse = (x: number, y: number) => {
     this.nodes.forEach((node, key) => {
       const { x: newX, y: newY, z: newZ } = this.utils.calculateRotatedCoordinates(node.x, node.y, node.z, x, y, 0, this.rotationRads);

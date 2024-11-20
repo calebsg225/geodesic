@@ -123,9 +123,12 @@ class DrawCanvas {
       const node = nodes.get(k)!;
       const faces = node.connections.faces;
       for (let j = 0; j < faces.length; j++) {
-        if (drawn.has(faces[j])) continue;
+        // if this particular face has been drawn, skip it
+        if (drawn.has(faces[j].split('').sort().join(''))) continue;
         const pairs: number[][] = [];
+        // used to calculate if z is behind
         let z = 0;
+        // draw each face
         for (const p of faces[j]) {
           const x = nodes.get(p)!.x + this.centerX;
           const y = nodes.get(p)!.y + this.centerY;
