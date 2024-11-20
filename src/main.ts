@@ -27,10 +27,24 @@ const geo = new Geodesic(geoCanvas, 800, 800, 300);
 const navElements = document.querySelectorAll<HTMLButtonElement>('[data-nav]');
 for (let i = 0; i < navElements.length; i++) {
   navElements[i].addEventListener('click', () => {
-    const [ axis, positive ] = navElements[i].dataset.nav!.split('-');
-    geo.rotate(axis, positive === 'up');
   });
 }
+
+const canvas = document.querySelector<HTMLCanvasElement>('#geodesic-canvas')!;
+let mouseIsDown = false;
+document.addEventListener('mouseup', () => {
+  // stop rotating graphic when mouse is no longer pressed
+  mouseIsDown = false;
+});
+canvas.addEventListener('mousedown', () => {
+  // starts dragging graphic ONLY if mouse is over canvas
+  mouseIsDown = true;
+});
+canvas.addEventListener('mousemove', (e) => {
+  // if mouse was not pressed on canvas, do nothing
+  if (!mouseIsDown) return;
+  geo.rotateMouse(e.movementX, e.movementY);
+});
 
 geo.setBase('icosahedron');
 geo.render();

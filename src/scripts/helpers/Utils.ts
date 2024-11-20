@@ -1,6 +1,3 @@
-import { NodeConnections } from "../../types/geodesicTypes";
-import GeoNode from "../geodesic/node";
-
 class Utils {
   constructor() {}
 
@@ -35,39 +32,25 @@ class Utils {
     return nums.map(num => this.mapChar(num));
   }
 
-  /**
-   * 
-   * @param x 
-   * @param y 
-   * @param z 
-   * @param connections pass through
-   * @param rotX rotation around x axis
-   * @param rotY rotation around y axis
-   * @param rotZ rotation around z axis
-   * @param step radians rotated per rotation
-   * @returns 
-   */
-  calculateRotation = (
-    x: number, 
-    y: number, 
-    z: number, 
-    connections: NodeConnections,
-    rotX: number,
-    rotY: number,
-    rotZ: number,
-    step: number
-  ): GeoNode => {
-    const sX = Math.sin(rotX*step);
-    const cX = Math.cos(rotX*step);
-    const sY = Math.sin(rotY*step);
-    const cY = Math.cos(rotY*step);
-    const sZ = Math.sin(rotZ*step);
-    const cZ = Math.cos(rotZ*step);
+  calculateRotatedCoordinates = (
+    x: number,
+    y: number,
+    z: number,
+    multiX: number,
+    multiY: number,
+    multiZ: number,
+    deg: number
+  ) => {
+    const sY = Math.sin(deg*multiX);
+    const cY = Math.cos(deg*multiX);
+    const sZ = -Math.sin(deg*multiY);
+    const cZ = Math.cos(deg*multiY);
+    const sX = Math.sin(deg*multiZ);
+    const cX = Math.cos(deg*multiZ);
     const nX = x*cX*cY + y*cX*sY*sZ - y*sX*cZ + z*cX*sY*cZ + z*sX*sZ;
     const nY = x*sX*cY + y*sX*sY*sZ + y*cX*cZ + z*sX*sY*cZ - z*cX*sZ;
     const nZ = -x*sY + y*cY*sZ + z*cY*cZ;
-    const node = new GeoNode(nX, nY, nZ, connections);
-    return node;
+    return {x: nX, y: nY, z: nZ}
   }
 }
 

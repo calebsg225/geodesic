@@ -10,11 +10,7 @@ class Geodesic {
   private bases: Map<BaseType, Geo>;
   private baseType: BaseType;
   private nodes: Geo;
-  private rotX: number;
-  private rotY: number;
-  private rotZ: number;
   private zoom: number;
-  private step: number;
   private frequency: number;
   constructor(element: HTMLCanvasElement, width: number, height: number, zoom: number) {
     this.drawCanvas = new DrawCanvas(element, width, height);
@@ -24,10 +20,6 @@ class Geodesic {
     this.element = element;
     this.baseType = 'cube';
     this.nodes = new Map();
-    this.step = Math.PI/12;
-    this.rotX = 0;
-    this.rotY = -2*this.step;
-    this.rotZ = -2*this.step;
     this.zoom = zoom;
     this.bases = new Map();
     this.frequency = 1;
@@ -55,7 +47,7 @@ class Geodesic {
       icosahedronBase.set(
         this.utils.mapChar(v), 
         new GeoNode(
-          x, y, z, 
+          x* this.zoom, y* this.zoom, z* this.zoom, 
           this.getIcosahedronConnections(v)
         )
       );
@@ -163,28 +155,19 @@ class Geodesic {
 
   render = () => {
     this.drawCanvas.clearCanvas();
-    const newNodes: Geo = new Map();
-    this.nodes.forEach((node, key) => {
-      newNodes.set(key, this.utils.calculateRotation(
-        node.x* this.zoom, 
-        node.y * this.zoom, 
-        node.z * this.zoom, 
-        node.connections,
-        this.rotX,
-        this.rotY,
-        this.rotZ,
-        this.step
-      ));
-    });
-    //this.drawCanvas.drawNodes(newNodes);
-    //this.drawCanvas.drawEdges(newNodes);
-    this.drawCanvas.drawFaces(newNodes);
+    //this.drawCanvas.drawEdges(this.nodes);
+    //this.drawCanvas.drawNodes(this.nodes);
+    this.drawCanvas.drawFaces(this.nodes);
   }
 
-  rotate = (axis: string, isPositive: boolean) => {
-    if (axis === "x") this.rotX += isPositive ? this.step : -this.step;
-    if (axis === "y") this.rotY += isPositive ? this.step : -this.step;
-    if (axis === "z") this.rotZ += isPositive ? this.step : -this.step;
+  rotateMouse = (x: number, y: number) => {
+    const deg = .008;
+    this.nodes.forEach((node, key) => {
+      const { x: newX, y: newY, z: newZ } = this.utils.calculateRotatedCoordinates(node.x, node.y, node.z, x, y, 0, deg);
+      this.nodes.set(key, 
+        new GeoNode(newX, newY, newZ, node.connections)
+      );
+    });
     this.render();
   }
 }

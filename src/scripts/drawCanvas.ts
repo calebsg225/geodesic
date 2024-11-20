@@ -105,7 +105,7 @@ class DrawCanvas {
           inMiddle.push([x, y, dx, dy]);
         } else {
           // render back first
-          this.drawEdge(x, y, dx, dy, '#FF877E');
+          this.drawEdge(x, y, dx, dy, '#FFFFFF');
         }
       }
     }
