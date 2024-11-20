@@ -8,11 +8,16 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   </section>
 `;
 
+const defaultZoom = 300;
+
 const geoCanvas = document.querySelector<HTMLCanvasElement>('#geodesic-canvas')!;
 const geo = new Geodesic(geoCanvas, 800, 800, 300);
 
 const canvas = document.querySelector<HTMLCanvasElement>('#geodesic-canvas')!;
 let mouseIsDown = false;
+let zoom = defaultZoom;
+const minZoom = 50;
+const maxZoom = 5000;
 document.addEventListener('mouseup', () => {
   // stop rotating graphic when mouse is no longer pressed
   mouseIsDown = false;
@@ -26,7 +31,16 @@ canvas.addEventListener('mousemove', (e) => {
   if (!mouseIsDown) return;
   geo.rotateMouse(e.movementX, e.movementY);
 });
+canvas.addEventListener('wheel', (e) => {
+  const vert = e.deltaY;
+  if (vert > 0 && zoom > minZoom) {
+    zoom -= 20;
+  }
+  if (vert < 0 && zoom < maxZoom) {
+    zoom += 20;
+  }
+  geo.updateZoom(zoom);
+})
 
 geo.setBase('icosahedron');
-//geo.updateZoom(400);
 geo.render();
