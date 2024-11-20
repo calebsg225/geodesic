@@ -28,4 +28,5 @@ canvas.addEventListener('mousemove', (e) => {
 });
 
 geo.setBase('icosahedron');
+//geo.updateZoom(400);
 geo.render();

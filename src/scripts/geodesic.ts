@@ -12,6 +12,7 @@ class Geodesic {
   private nodes: Geo;
   private zoom: number;
   private frequency: number;
+  private rotationRads: number;
   constructor(element: HTMLCanvasElement, width: number, height: number, zoom: number) {
     this.drawCanvas = new DrawCanvas(element, width, height);
     this.utils = new Utils();
@@ -23,6 +24,7 @@ class Geodesic {
     this.zoom = zoom;
     this.bases = new Map();
     this.frequency = 1;
+    this.rotationRads = 0.008;
     this.init();
   }
 
@@ -93,16 +95,6 @@ class Geodesic {
   }
 
   /**
-   * sets new zoom value
-   * rerenders with new zoom value
-   * @param zoom 
-   */
-  setZoom = (zoom: number) => {
-    this.zoom = zoom;
-    this.render();
-  };
-
-  /**
    * overwrites previous canvas height and width with new values
    * @param width new canvas width
    * @param height new canvas height
@@ -155,15 +147,30 @@ class Geodesic {
 
   render = () => {
     this.drawCanvas.clearCanvas();
-    //this.drawCanvas.drawEdges(this.nodes);
+    //this.drawCanvas.drawFaces(this.nodes);
+    this.drawCanvas.drawEdges(this.nodes);
     //this.drawCanvas.drawNodes(this.nodes);
-    this.drawCanvas.drawFaces(this.nodes);
+  }
+
+  /**
+   * sets new zoom value
+   * re-renders with new zoom value
+   * @param zoom 
+   */
+  updateZoom = (zoom: number) => {
+    const nZoom = this.zoom / zoom;
+    this.nodes.forEach((node, key) => {
+      this.nodes.set(key,
+        new GeoNode(node.x / nZoom, node.y / nZoom, node.z / nZoom, node.connections)
+      )
+    });
+    this.zoom = zoom;
+    this.render();
   }
 
   rotateMouse = (x: number, y: number) => {
-    const deg = .008;
     this.nodes.forEach((node, key) => {
-      const { x: newX, y: newY, z: newZ } = this.utils.calculateRotatedCoordinates(node.x, node.y, node.z, x, y, 0, deg);
+      const { x: newX, y: newY, z: newZ } = this.utils.calculateRotatedCoordinates(node.x, node.y, node.z, x, y, 0, this.rotationRads);
       this.nodes.set(key, 
         new GeoNode(newX, newY, newZ, node.connections)
       );
