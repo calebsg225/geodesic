@@ -41,6 +41,7 @@ class Utils {
     multiZ: number,
     deg: number
   ) => {
+    // values are mislabeled to compensate for misaligned axes
     const sY = Math.sin(deg*multiX);
     const cY = Math.cos(deg*multiX);
     const sZ = -Math.sin(deg*multiY);

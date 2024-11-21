@@ -1,38 +1,42 @@
 import DrawCanvas from './DrawCanvas';
+import UserInterface from './userInterface/UserInterface';
 import GeoNode from "./geodesic/node";
 import Utils from './helpers/Utils';
 import { NodeConnections, Geo, BaseType } from '../types/geodesicTypes';
 
 class Geodesic {
-  drawCanvas: DrawCanvas;
+  private userInterface: UserInterface;
+  private drawCanvas: DrawCanvas;
   private utils: Utils;
-  element: HTMLCanvasElement;
   private bases: Map<BaseType, Geo>;
   private baseType: BaseType;
   private nodes: Geo;
   private zoom: number;
+  private zoomMin: number;
+  private zoomStep: number;
+  private zoomMax: number;
   private frequency: number;
   private rotationRads: number;
-  constructor(element: HTMLCanvasElement, width: number, height: number, zoom: number) {
-    this.drawCanvas = new DrawCanvas(element, width, height);
-    this.utils = new Utils();
-    element.width = width;
-    element.height = height;
-    this.element = element;
-    this.baseType = 'cube';
+  constructor(canvasParentElement: HTMLElement, panelParentElement: HTMLElement, width: number, height: number, zoom: number) {
+    this.baseType = 'icosahedron';
     this.nodes = new Map();
     this.zoom = zoom;
+    this.zoomMin = 50;
+    this.zoomStep = 20;
+    this.zoomMax = 5000;
     this.bases = new Map();
     this.frequency = 1;
     this.rotationRads = 0.008;
-    this.init();
-  }
 
-  private init = () => {
-    // create all bases
+    this.utils = new Utils();
+    this.userInterface = new UserInterface(canvasParentElement, panelParentElement);
+    this.drawCanvas = new DrawCanvas(this.userInterface.getCanvasElement(), width, height);
+
+    this.userInterface.generateEventListeners(this.rotate, this.updateZoom);
+
     this.generateBases();
-    // generate default nodes
     this.generateGeo();
+    this.render();
   }
 
   private generateBases = (): void => {
@@ -94,16 +98,6 @@ class Geodesic {
     return cubeBase;
   }
 
-  /**
-   * overwrites previous canvas height and width with new values
-   * @param width new canvas width
-   * @param height new canvas height
-   */
-  updateCanvasSize = (width: number, height: number) => {
-    this.element.width = width;
-    this.element.height = height;
-  }
-
   // given an integer 0-7 inclusive, returns connected cube edges and faces
   private getCubeConnections = (bin: number): NodeConnections => {
     return {
@@ -132,7 +126,7 @@ class Geodesic {
     };
   }
 
-  setBase = (baseType: BaseType) => {
+  private setBase = (baseType: BaseType) => {
     this.baseType = baseType;
     this.generateGeo();
   }
@@ -147,7 +141,7 @@ class Geodesic {
     }
   }
 
-  render = () => {
+  private render = () => {
     this.drawCanvas.clearCanvas();
     this.drawCanvas.drawFaces(this.nodes);
     //this.drawCanvas.drawEdges(this.nodes);
@@ -157,21 +151,27 @@ class Geodesic {
   /**
    * sets new zoom value
    * re-renders with new zoom value
-   * @param zoom 
    */
-  updateZoom = (zoom: number) => {
-    const nZoom = this.zoom / zoom;
+  private updateZoom = (isPositive: boolean) => {
+    let newZoom = 0;
+    if (!isPositive && this.zoom > this.zoomMin) {
+      newZoom = this.zoom - this.zoomStep;
+    }
+    if (isPositive && this.zoom < this.zoomMax) {
+      newZoom = this.zoom + this.zoomStep;
+    }
+    const deltaZoom = this.zoom / newZoom;
     this.nodes.forEach((node, key) => {
       this.nodes.set(key,
-        new GeoNode(node.x / nZoom, node.y / nZoom, node.z / nZoom, node.connections)
+        new GeoNode(node.x / deltaZoom, node.y / deltaZoom, node.z / deltaZoom, node.connections)
       )
     });
-    this.zoom = zoom;
+    this.zoom = newZoom;
     this.render();
   }
 
   // TODO: make zoom change the amount of rotation
-  rotateMouse = (x: number, y: number) => {
+  private rotate = (x: number, y: number) => {
     this.nodes.forEach((node, key) => {
       const { x: newX, y: newY, z: newZ } = this.utils.calculateRotatedCoordinates(node.x, node.y, node.z, x, y, 0, this.rotationRads);
       this.nodes.set(key, 

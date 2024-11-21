@@ -9,6 +9,8 @@ class DrawCanvas {
   centerX: number;
   centerY: number;
   constructor(element: HTMLCanvasElement, width: number, height: number) {
+    element.width = width;
+    element.height = height;
     this.utils = new Utils();
     this.ctx = element.getContext('2d');
     this.width = width;
