@@ -160,6 +160,7 @@ class Geodesic {
     if (isPositive && this.zoom < this.zoomMax) {
       newZoom = this.zoom + this.zoomStep;
     }
+    if (!newZoom) return;
     const deltaZoom = this.zoom / newZoom;
     this.nodes.forEach((node, key) => {
       this.nodes.set(key,
