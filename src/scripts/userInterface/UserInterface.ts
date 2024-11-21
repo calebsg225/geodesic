@@ -42,7 +42,19 @@ class UserInterface {
   private generatePanel = () => {
     this.panelParent.innerHTML = `
       ${this.panelParent.innerHTML}
-      <section id="${this.panelId}" class="flex"></section>
+      <form id="${this.panelId}" class="w-96">
+        <div class="flex justify-between">
+          <p>frequency: </p>
+          <input type="range" min="1" max="50" value="1">
+        </div>
+        <div class="flex justify-between">
+          <p>Base: </p>
+          <select>
+            ${['icosahedron', 'cube', 'tetrahedron'].map((v, i) => `<option key=${i} value="${v}">${v}</option>`)}
+          </select>
+        </div>
+        <input class="cursor-pointer" type="submit" value="Generate">
+      </form>
     `;
   }
 

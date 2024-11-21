@@ -17,10 +17,10 @@ class Geodesic {
   private zoomMax: number;
   private frequency: number;
   private rotationRads: number;
-  constructor(canvasParentElement: HTMLElement, panelParentElement: HTMLElement, width: number, height: number, zoom: number) {
+  constructor(canvasParentElement: HTMLElement, panelParentElement: HTMLElement) {
     this.baseType = 'icosahedron';
     this.nodes = new Map();
-    this.zoom = zoom;
+    this.zoom = 300;
     this.zoomMin = 50;
     this.zoomStep = 20;
     this.zoomMax = 5000;
@@ -30,7 +30,7 @@ class Geodesic {
 
     this.utils = new Utils();
     this.userInterface = new UserInterface(canvasParentElement, panelParentElement);
-    this.drawCanvas = new DrawCanvas(this.userInterface.getCanvasElement(), width, height);
+    this.drawCanvas = new DrawCanvas(this.userInterface.getCanvasElement(), 800, 800);
 
     this.userInterface.generateEventListeners(this.rotate, this.updateZoom);
 
