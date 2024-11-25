@@ -1,11 +1,11 @@
 import DrawCanvas from './DrawCanvas';
-import UserInterface from './userInterface/UserInterface';
+import GeodesicInterface from './GeodesicInterface';
 import GeoNode from "./geodesic/node";
 import Utils from './helpers/Utils';
 import { NodeConnections, Geo, BaseType } from '../types/geodesicTypes';
 
-class Geodesic {
-  private userInterface: UserInterface;
+class HandleGeodesic {
+  private geodesicInterface: GeodesicInterface;
   private drawCanvas: DrawCanvas;
   private utils: Utils;
   private bases: Map<BaseType, Geo>;
@@ -25,14 +25,14 @@ class Geodesic {
     this.zoomStep = 20;
     this.zoomMax = 5000;
     this.bases = new Map();
-    this.frequency = 1;
+    this.frequency = 10;
     this.rotationRads = 0.008;
 
     this.utils = new Utils();
-    this.userInterface = new UserInterface(canvasParentElement, panelParentElement);
-    this.drawCanvas = new DrawCanvas(this.userInterface.getCanvasElement(), 800, 800);
+    this.geodesicInterface = new GeodesicInterface(canvasParentElement, panelParentElement);
+    this.drawCanvas = new DrawCanvas(this.geodesicInterface.getCanvasElement(), 800, 800);
 
-    this.userInterface.generateEventListeners(this.rotate, this.updateZoom);
+    this.geodesicInterface.generateEventListeners(this.rotate, this.updateZoom);
 
     this.generateBases();
     this.generateGeo();
@@ -126,7 +126,7 @@ class Geodesic {
     };
   }
 
-  private setBase = (baseType: BaseType) => {
+  setBase = (baseType: BaseType) => {
     this.baseType = baseType;
     this.generateGeo();
   }
@@ -138,14 +138,55 @@ class Geodesic {
   private generateGeo = () => {
     if (this.frequency === 1) {
       this.nodes = this.bases.get(this.baseType)!;
+      return;
     }
+    switch(this.baseType) {
+      case('icosahedron'):
+        this.generateIcosahedronAtFrequency();
+        break;
+      default:
+        break;
+    }
+  }
+
+  private generateIcosahedronAtFrequency = (): void => {
+    const nodes = this.bases.get(this.baseType)!;
+    const v = this.frequency;
+    const visited = new Set<string>();
+    for (const k of nodes.keys()) {
+      const node = nodes.get(k)!;
+      const faces = node.connections.faces;
+      for (let f = 0; f < faces.length; f++) {
+        // if face has been drawn, skip
+        const face = faces[f].split('').sort();
+        if (visited.has(face.join(''))) continue;
+
+        // generate all intermediate nodes
+        for (let i = v; i >= 0; i--) {
+          for (let j = v-i; j >= 0; j--) {
+            const k = v-i-j;
+            const key = `${i ? `${face[0]}${i}` : ''}${j ? `${face[1]}${j}` : ''}${k ? `${face[2]}${k}` : ''}`;
+            // if this node has been generated, skip
+            if (this.nodes.has(key)) continue;
+            const {x:x0, y:y0, z:z0} = nodes.get(face[0])!;
+            const {x:x1, y:y1, z:z1} = nodes.get(face[1])!;
+            const {x:x2, y:y2, z:z2} = nodes.get(face[2])!;
+            const {x, y, z} = this.utils.icosahedronIntermediateNode(i, j, k, x0, y0, z0, x1, y1, z1, x2, y2, z2);
+            this.nodes.set(key, new GeoNode(x*this.zoom, y*this.zoom, z*this.zoom));
+          }
+        }
+
+        visited.add(face.join(''));
+      }
+    }
+    console.log(this.nodes);
   }
 
   private render = () => {
     this.drawCanvas.clearCanvas();
-    this.drawCanvas.drawFaces(this.nodes);
+    //this.drawCanvas.drawFaces(this.nodes);
     //this.drawCanvas.drawEdges(this.nodes);
-    //this.drawCanvas.drawNodes(this.nodes);
+    this.drawCanvas.drawNodes(this.nodes);
   }
 
   /**
@@ -183,4 +224,4 @@ class Geodesic {
   }
 }
 
-export default Geodesic;
+export default HandleGeodesic;

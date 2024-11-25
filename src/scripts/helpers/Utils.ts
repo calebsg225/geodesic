@@ -53,6 +53,20 @@ class Utils {
     const nZ = -x*sY + y*cY*sZ + z*cY*cZ;
     return {x: nX, y: nY, z: nZ}
   }
+
+  icosahedronIntermediateNode = (
+    i: number, j: number, k: number, 
+    x0: number, y0: number, z0: number,
+    x1: number, y1: number, z1: number,
+    x2: number, y2: number, z2: number
+  ) => {
+    const v = i+j+k;
+    const x = x0*(i/v) + x1*(j/v) + x2*(k/v);
+    const y = y0*(i/v) + y1*(j/v) + y2*(k/v);
+    const z = z0*(i/v) + z1*(j/v) + z2*(k/v);
+    const r = this.distanceF(x, y, z, 0, 0, 0);
+    return {x: x/r, y: y/r, z: z/r}
+  }
 }
 
 export default Utils;

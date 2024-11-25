@@ -1,7 +1,7 @@
 import './output.css';
-import Geodesic from './scripts/Geodesic';
+import HandleGeodesic from './scripts/HandleGeodesic';
 
 // main
 
 const parent = document.querySelector<HTMLDivElement>('#app')!
-new Geodesic(parent, parent);
+new HandleGeodesic(parent, parent);

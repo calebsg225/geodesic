@@ -1,4 +1,4 @@
-class UserInterface {
+class GeodesicInterface {
   private canvasParent: HTMLElement;
   private panelParent: HTMLElement;
   private panelId: string;
@@ -62,6 +62,7 @@ class UserInterface {
     onRotate: (x: number, y: number) => void,
     onZoom: (isPositive: boolean) => void
   ) => {
+    // TODO: allow for rotations on mobile
     const canvas = document.querySelector<HTMLCanvasElement>(`#${this.canvasId}`)!;
     document.addEventListener('mouseup', () => {
       this.mouseIsDown = false;
@@ -83,4 +84,4 @@ class UserInterface {
   }
 }
 
-export default UserInterface;
+export default GeodesicInterface;

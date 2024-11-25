@@ -12,8 +12,8 @@ class GeoNode {
     this.x = x;
     this.y = y;
     this.z = z;
-    this.color = 'blue';
-    this.size = 8;
+    this.color = 'red';
+    this.size = 3;
     this.connections = connections;
   }
 }

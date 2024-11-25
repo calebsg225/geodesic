@@ -30,10 +30,10 @@ class DrawCanvas {
     this.ctx.beginPath();
     this.ctx.arc(x, y, size, 0, 2*Math.PI);
     this.ctx.strokeStyle = 'black'
-    this.ctx.lineWidth = 2
+    this.ctx.lineWidth = 1
     this.ctx.fillStyle = color;
     this.ctx.fill();
-    this.ctx.stroke();
+    //this.ctx.stroke();
   }
 
   private drawEdge = (x: number, y: number, dx: number, dy: number, color: string): void => {
@@ -76,7 +76,7 @@ class DrawCanvas {
       }
       const x = this.centerX + node.x;
       const y = this.centerY + node.y;
-      this.drawNode(x, y, node.size, node.color);
+      this.drawNode(x, y, node.size, '#FFC7C7');
     });
     for (let i = 0; i < inFront.length; i++) {
       const node = nodes.get(inFront[i])!;
