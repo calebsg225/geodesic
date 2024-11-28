@@ -20,12 +20,12 @@ class HandleGeodesic {
   constructor(canvasParentElement: HTMLElement, panelParentElement: HTMLElement) {
     this.baseType = 'icosahedron';
     this.nodes = new Map();
-    this.zoom = 300;
+    this.zoom = 380;
     this.zoomMin = 50;
     this.zoomStep = 20;
     this.zoomMax = 5000;
     this.bases = new Map();
-    this.frequency = 10;
+    this.frequency = 20;
     this.rotationRads = 0.008;
 
     this.utils = new Utils();
@@ -164,28 +164,36 @@ class HandleGeodesic {
         // generate all intermediate nodes
         for (let i = v; i >= 0; i--) {
           for (let j = v-i; j >= 0; j--) {
+            const connections: NodeConnections = { edges: [], faces: [] }
             const k = v-i-j;
             const key = `${i ? `${face[0]}${i}` : ''}${j ? `${face[1]}${j}` : ''}${k ? `${face[2]}${k}` : ''}`;
+
+            // temp add base edges to main
+            const tempKey = `${i ? `${face[0]}` : ''}${j ? `${face[1]}` : ''}${k ? `${face[2]}` : ''}`;
+            if (nodes.has(tempKey)) {
+              connections.edges = nodes.get(`${tempKey}`)!.connections.edges.map(val => val + `${v}`);
+              connections.faces = nodes.get(`${tempKey}`)!.connections.faces;
+            }
+
             // if this node has been generated, skip
             if (this.nodes.has(key)) continue;
             const {x:x0, y:y0, z:z0} = nodes.get(face[0])!;
             const {x:x1, y:y1, z:z1} = nodes.get(face[1])!;
             const {x:x2, y:y2, z:z2} = nodes.get(face[2])!;
             const {x, y, z} = this.utils.icosahedronIntermediateNode(i, j, k, x0, y0, z0, x1, y1, z1, x2, y2, z2);
-            this.nodes.set(key, new GeoNode(x*this.zoom, y*this.zoom, z*this.zoom));
+            this.nodes.set(key, new GeoNode(x*this.zoom, y*this.zoom, z*this.zoom, connections));
           }
         }
 
         visited.add(face.join(''));
       }
     }
-    console.log(this.nodes);
   }
 
   private render = () => {
     this.drawCanvas.clearCanvas();
     //this.drawCanvas.drawFaces(this.nodes);
-    //this.drawCanvas.drawEdges(this.nodes);
+    this.drawCanvas.drawEdges(this.nodes);
     this.drawCanvas.drawNodes(this.nodes);
   }
 

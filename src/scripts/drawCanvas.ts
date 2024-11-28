@@ -41,10 +41,10 @@ class DrawCanvas {
     this.ctx.beginPath();
     this.ctx.moveTo(x, y);
     this.ctx.lineTo(dx, dy);
-    this.ctx.lineWidth = 8;
+    /* this.ctx.lineWidth = 8;
     this.ctx.strokeStyle = 'black';
-    this.ctx.stroke();
-    this.ctx.lineWidth = 6;
+    this.ctx.stroke(); */
+    this.ctx.lineWidth = 1;
     this.ctx.strokeStyle = color;
     this.ctx.lineTo(x, y);
     this.ctx.stroke();
@@ -107,7 +107,7 @@ class DrawCanvas {
           inMiddle.push([x, y, dx, dy]);
         } else {
           // render back first
-          this.drawEdge(x, y, dx, dy, '#FFFFFF');
+          this.drawEdge(x, y, dx, dy, '#DDE0FF');
         }
       }
     }
@@ -115,7 +115,7 @@ class DrawCanvas {
     // render middle second, render front third
     for (let i = 0; i < inMiddle.length; i++) {
       const [x, y, dx, dy] = inMiddle[i];
-      this.drawEdge(x, y, dx, dy, 'red');
+      this.drawEdge(x, y, dx, dy, 'blue');
     }
   }
 

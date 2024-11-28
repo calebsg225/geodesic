@@ -13,7 +13,7 @@ class GeoNode {
     this.y = y;
     this.z = z;
     this.color = 'red';
-    this.size = 3;
+    this.size = 1;
     this.connections = connections;
   }
 }
