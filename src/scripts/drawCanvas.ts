@@ -76,22 +76,24 @@ class DrawCanvas {
       }
       const x = this.centerX + node.x;
       const y = this.centerY + node.y;
-      this.drawNode(x, y, node.size, '#FFC7C7');
+      this.drawNode(x, y, 1, '#FFC7C7');
     });
     for (let i = 0; i < inFront.length; i++) {
       const node = nodes.get(inFront[i])!;
       const x = this.centerX + node.x;
       const y = this.centerY + node.y;
-      this.drawNode(x, y, node.size, node.color);
+      this.drawNode(x, y, 1, 'red');
     }
   }
 
-  drawEdges = (nodes: Geo): void => {
+  drawEdges = (nodes: Geo, drawBaseEdges: boolean = false): void => {
     const inFront: number[][] = [];
     const inMiddle: number[][] = [];
     for (const k of nodes.keys()) {
       const node = nodes.get(k)!;
-      const edges = node.connections.edges;
+      // draw either base edges or main edges
+      const edges = drawBaseEdges ? node.connections.baseEdges : node.connections.edges;
+      if (!edges) continue;
       for (let j = 0; j < edges.length; j++) {
         if (this.utils.numFromChar(edges[j]) < this.utils.numFromChar(k)) continue;
         const x = node.x + this.centerX;

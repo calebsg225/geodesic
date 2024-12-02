@@ -30,7 +30,7 @@ class HandleGeodesic {
 
     this.utils = new Utils();
     this.geodesicInterface = new GeodesicInterface(canvasParentElement, panelParentElement);
-    this.drawCanvas = new DrawCanvas(this.geodesicInterface.getCanvasElement(), 800, 800);
+    this.drawCanvas = new DrawCanvas(this.geodesicInterface.getCanvasElement(), 1000, 800);
 
     this.geodesicInterface.generateEventListeners(this.rotate, this.updateZoom);
 
@@ -116,6 +116,7 @@ class HandleGeodesic {
     this.utils.mapToChars([v, gT(v), gM(v)]).sort().join('')
     return {
       edges: this.utils.mapToChars([gT(v), gM(v), gM(v) + 2, gB(v), gB(v)+1]),
+      baseEdges: this.utils.mapToChars([gT(v), gM(v), gM(v) + 2, gB(v), gB(v)+1]),
       faces: [
         [gT(v), gM(v)],
         [gM(v), gB(v)],
@@ -144,6 +145,8 @@ class HandleGeodesic {
       case('icosahedron'):
         this.generateIcosahedronAtFrequency();
         break;
+      case('cube'):
+        break;
       default:
         break;
     }
@@ -168,10 +171,10 @@ class HandleGeodesic {
             const k = v-i-j;
             const key = `${i ? `${face[0]}${i}` : ''}${j ? `${face[1]}${j}` : ''}${k ? `${face[2]}${k}` : ''}`;
 
-            // temp add base edges to main
+            // add base edges
             const tempKey = `${i ? `${face[0]}` : ''}${j ? `${face[1]}` : ''}${k ? `${face[2]}` : ''}`;
             if (nodes.has(tempKey)) {
-              connections.edges = nodes.get(`${tempKey}`)!.connections.edges.map(val => val + `${v}`);
+              connections.baseEdges = nodes.get(`${tempKey}`)!.connections.baseEdges?.map(val => val + `${v}`);
               connections.faces = nodes.get(`${tempKey}`)!.connections.faces;
             }
 
