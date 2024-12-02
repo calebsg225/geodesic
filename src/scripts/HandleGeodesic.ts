@@ -25,7 +25,7 @@ class HandleGeodesic {
     this.zoomStep = 20;
     this.zoomMax = 5000;
     this.bases = new Map();
-    this.frequency = 3;
+    this.frequency = 10;
     this.rotationRads = 0.008;
 
     this.utils = new Utils();
@@ -103,17 +103,20 @@ class HandleGeodesic {
     const gT = (n: number) => (n^1)%12;
     const gM = (n: number) => 4*((Math.floor(n/4) + 1)%3) + Math.floor(n/2)%2;
     const gB = (n: number) => 4*((Math.floor(n/4) + 2)%3) + 2*(n%2);
-    this.utils.mapToChars([v, gT(v), gM(v)]).sort().join('')
+    this.utils.mapToChars([v, gT(v), gM(v)]).sort().join('');
+    const edges = this.utils.mapToChars([gT(v), gM(v), gM(v) + 2, gB(v), gB(v)+1]);
+    const faces = [
+      [gT(v), gM(v)],
+      [gM(v), gB(v)],
+      [gB(v), gB(v) + 1],
+      [gB(v) + 1, gM(v) + 2],
+      [gM(v) + 2, gT(v)]
+    ].map(val => this.utils.mapToChars([v, ...val]).join(''));
     return {
-      edges: this.utils.mapToChars([gT(v), gM(v), gM(v) + 2, gB(v), gB(v)+1]),
-      baseEdges: this.utils.mapToChars([gT(v), gM(v), gM(v) + 2, gB(v), gB(v)+1]),
-      faces: [
-        [gT(v), gM(v)],
-        [gM(v), gB(v)],
-        [gB(v), gB(v) + 1],
-        [gB(v) + 1, gM(v) + 2],
-        [gM(v) + 2, gT(v)]
-      ].map(val => this.utils.mapToChars([v, ...val]).join(''))
+      edges: edges,
+      baseEdges: edges,
+      faces: faces,
+      baseFaces: faces
     };
   }
 
@@ -175,8 +178,14 @@ class HandleGeodesic {
             const k = v-i-j;
             const key = `${i ? `${face[0]}${i}` : ''}${j ? `${face[1]}${j}` : ''}${k ? `${face[2]}${k}` : ''}`;
 
-            // if node is on the bases' edges or vertices (any 0's), don't calculate: will add from a face node
-            if (i && j && k) {
+            // add base connections to base vertices
+            const baseKey = `${i ? `${face[0]}` : ''}${j ? `${face[1]}` : ''}${k ? `${face[2]}` : ''}`;
+            if (nodes.has(baseKey)) {
+              connections.baseEdges = nodes.get(`${baseKey}`)!.connections.baseEdges?.map(val => val + `${v}`);
+              connections.baseFaces = nodes.get(`${baseKey}`)!.connections.baseFaces;
+            }
+
+            if (i && j && k) { // base face node
               for (let o = 0; o < 3; o++) {
                 for (let p = 0; p < 2; p++) {
                   const i2 = i+(o-1);
@@ -190,9 +199,7 @@ class HandleGeodesic {
                   else (addEdgeConnections[edgeKey] = [key]);
                 }
               }
-
-            // if its an edge node
-            } else if ((i && j) || (j && k) || (k && i)) {
+            } else if ((i && j) || (j && k) || (k && i)) { // base edge node
               for (let o = 0; o < 2; o++) {
                 const p = o*2-1;
                 const i2 = i ? i+p : 0;
@@ -209,13 +216,6 @@ class HandleGeodesic {
               }
             }
 
-            // add base edge connections
-            const baseKey = `${i ? `${face[0]}` : ''}${j ? `${face[1]}` : ''}${k ? `${face[2]}` : ''}`;
-            if (nodes.has(baseKey)) {
-              connections.baseEdges = nodes.get(`${baseKey}`)!.connections.baseEdges?.map(val => val + `${v}`);
-              connections.faces = nodes.get(`${baseKey}`)!.connections.faces;
-            }
-
             // if this node has been generated, skip
             if (this.nodes.has(key)) continue;
             const {x:x0, y:y0, z:z0} = nodes.get(face[0])!;
@@ -224,6 +224,16 @@ class HandleGeodesic {
             const {x, y, z} = this.utils.icosahedronIntermediateNode(i, j, k, x0, y0, z0, x1, y1, z1, x2, y2, z2);
             this.nodes.set(key, new GeoNode(x*this.zoom, y*this.zoom, z*this.zoom, connections));
           }
+        }
+
+        // draw face-specific edges
+        for (let i = 0; i < 3; i++) {
+          const e1key = [`${face[i]}${v-1}`, `${face[(i+1)%3]}${1}`].sort().join('');
+          const e2key = [`${face[i]}${v-1}`, `${face[(i+2)%3]}${1}`].sort().join('');
+          if (addEdgeConnections[e1key]) addEdgeConnections[e1key].push(e2key);
+          else (addEdgeConnections[e1key] = [e2key]);
+          if (addEdgeConnections[e2key]) addEdgeConnections[e2key].push(e1key);
+          else (addEdgeConnections[e2key] = [e1key]);
         }
 
         visited.add(face.join(''));

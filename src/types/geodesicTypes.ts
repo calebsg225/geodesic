@@ -3,7 +3,8 @@ import GeoNode from "../scripts/geodesic/node";
 type NodeConnections = {
   edges: string[],
   faces: string[],
-  baseEdges?: string[]
+  baseEdges?: string[],
+  baseFaces?: string[]
 }
 
 type Geo = Map<string, GeoNode>;
