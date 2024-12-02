@@ -76,17 +76,17 @@ class DrawCanvas {
       }
       const x = this.centerX + node.x;
       const y = this.centerY + node.y;
-      this.drawNode(x, y, 1, '#FFC7C7');
+      this.drawNode(x, y, 4, '#FFC7C7');
     });
     for (let i = 0; i < inFront.length; i++) {
       const node = nodes.get(inFront[i])!;
       const x = this.centerX + node.x;
       const y = this.centerY + node.y;
-      this.drawNode(x, y, 1, 'red');
+      this.drawNode(x, y, 4, 'blue');
     }
   }
 
-  drawEdges = (nodes: Geo, drawBaseEdges: boolean = false): void => {
+  drawEdges = (nodes: Geo, color: string, drawBaseEdges: boolean = false): void => {
     const inFront: number[][] = [];
     const inMiddle: number[][] = [];
     for (const k of nodes.keys()) {
@@ -117,7 +117,7 @@ class DrawCanvas {
     // render middle second, render front third
     for (let i = 0; i < inMiddle.length; i++) {
       const [x, y, dx, dy] = inMiddle[i];
-      this.drawEdge(x, y, dx, dy, 'blue');
+      this.drawEdge(x, y, dx, dy, color);
     }
   }
 

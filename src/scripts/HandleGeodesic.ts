@@ -25,7 +25,7 @@ class HandleGeodesic {
     this.zoomStep = 20;
     this.zoomMax = 5000;
     this.bases = new Map();
-    this.frequency = 20;
+    this.frequency = 3;
     this.rotationRads = 0.008;
 
     this.utils = new Utils();
@@ -97,17 +97,7 @@ class HandleGeodesic {
     }
     return cubeBase;
   }
-
-  // given an integer 0-7 inclusive, returns connected cube edges and faces
-  private getCubeConnections = (bin: number): NodeConnections => {
-    return {
-      edges: this.utils.mapToChars([bin ^ 0b001, bin ^ 0b010, bin ^ 0b100]),
-      // TODO: calculate cube faces
-      // faces are in adjacent order. This matters when drawing non-triangle faces for the drawFace function.
-      faces: []
-    }
-  }
-
+  
   // given an integer 0-11 inclusive, returns connected icosahedron edges and faces
   private getIcosahedronConnections = (v: number): NodeConnections => {
     const gT = (n: number) => (n^1)%12;
@@ -125,6 +115,16 @@ class HandleGeodesic {
         [gM(v) + 2, gT(v)]
       ].map(val => this.utils.mapToChars([v, ...val]).join(''))
     };
+  }
+
+  // given an integer 0-7 inclusive, returns connected cube edges and faces
+  private getCubeConnections = (bin: number): NodeConnections => {
+    return {
+      edges: this.utils.mapToChars([bin ^ 0b001, bin ^ 0b010, bin ^ 0b100]),
+      // TODO: calculate cube faces
+      // faces are in adjacent order. This matters when drawing non-triangle faces for the drawFace function.
+      faces: []
+    }
   }
 
   setBase = (baseType: BaseType) => {
@@ -156,6 +156,10 @@ class HandleGeodesic {
     const nodes = this.bases.get(this.baseType)!;
     const v = this.frequency;
     const visited = new Set<string>();
+
+    // map of string keys and edge connections to add to nodes at string key
+    const addEdgeConnections: {[key: string]: string[]} = {};
+
     for (const k of nodes.keys()) {
       const node = nodes.get(k)!;
       const faces = node.connections.faces;
@@ -171,11 +175,45 @@ class HandleGeodesic {
             const k = v-i-j;
             const key = `${i ? `${face[0]}${i}` : ''}${j ? `${face[1]}${j}` : ''}${k ? `${face[2]}${k}` : ''}`;
 
-            // add base edges
-            const tempKey = `${i ? `${face[0]}` : ''}${j ? `${face[1]}` : ''}${k ? `${face[2]}` : ''}`;
-            if (nodes.has(tempKey)) {
-              connections.baseEdges = nodes.get(`${tempKey}`)!.connections.baseEdges?.map(val => val + `${v}`);
-              connections.faces = nodes.get(`${tempKey}`)!.connections.faces;
+            // if node is on the bases' edges or vertices (any 0's), don't calculate: will add from a face node
+            if (i && j && k) {
+              for (let o = 0; o < 3; o++) {
+                for (let p = 0; p < 2; p++) {
+                  const i2 = i+(o-1);
+                  const j2 = j+((o+1+p)%3 - 1);
+                  const k2 = v-i2-j2;
+                  const edgeKey = `${i2 ? `${face[0]}${i2}` : ''}${j2 ? `${face[1]}${j2}` : ''}${k2 ? `${face[2]}${k2}` : ''}`;
+                  connections.edges.push(edgeKey);
+                  if (i2 && j2 && k2) continue; // face node
+                  // edge node
+                  if (addEdgeConnections[edgeKey]) addEdgeConnections[edgeKey].push(key);
+                  else (addEdgeConnections[edgeKey] = [key]);
+                }
+              }
+
+            // if its an edge node
+            } else if ((i && j) || (j && k) || (k && i)) {
+              for (let o = 0; o < 2; o++) {
+                const p = o*2-1;
+                const i2 = i ? i+p : 0;
+                const j2 = j ? j+(i ? -p : p) : 0;
+                const k2 = k ? k-p : 0;
+                const edgeKey = `${i2 ? `${face[0]}${i2}` : ''}${j2 ? `${face[1]}${j2}` : ''}${k2 ? `${face[2]}${k2}` : ''}`;
+                connections.edges.push(edgeKey);
+
+                if (i2 === v || j2 === v || k2 === v) {
+                  // vertex node
+                  if (addEdgeConnections[edgeKey]) addEdgeConnections[edgeKey].push(key);
+                  else (addEdgeConnections[edgeKey] = [key]);
+                }
+              }
+            }
+
+            // add base edge connections
+            const baseKey = `${i ? `${face[0]}` : ''}${j ? `${face[1]}` : ''}${k ? `${face[2]}` : ''}`;
+            if (nodes.has(baseKey)) {
+              connections.baseEdges = nodes.get(`${baseKey}`)!.connections.baseEdges?.map(val => val + `${v}`);
+              connections.faces = nodes.get(`${baseKey}`)!.connections.faces;
             }
 
             // if this node has been generated, skip
@@ -191,13 +229,21 @@ class HandleGeodesic {
         visited.add(face.join(''));
       }
     }
+
+    // add edge connections to base vertices and edges
+    // doing it this way to be certain every node that needs edge connections has already been generated
+    for (const key of Object.keys(addEdgeConnections)) {
+      this.nodes.get(key)!.connections.edges.push(...addEdgeConnections[key]);
+    }
+
   }
 
   private render = () => {
     this.drawCanvas.clearCanvas();
     //this.drawCanvas.drawFaces(this.nodes);
-    this.drawCanvas.drawEdges(this.nodes);
-    this.drawCanvas.drawNodes(this.nodes);
+    //this.drawCanvas.drawEdges(this.nodes, 'blue', true);
+    this.drawCanvas.drawEdges(this.nodes, 'red');
+    //this.drawCanvas.drawNodes(this.nodes);
   }
 
   /**
