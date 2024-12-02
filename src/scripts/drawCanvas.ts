@@ -76,13 +76,13 @@ class DrawCanvas {
       }
       const x = this.centerX + node.x;
       const y = this.centerY + node.y;
-      this.drawNode(x, y, 4, '#FFC7C7');
+      //this.drawNode(x, y, 2, '#FFC7C7');
     });
     for (let i = 0; i < inFront.length; i++) {
       const node = nodes.get(inFront[i])!;
       const x = this.centerX + node.x;
       const y = this.centerY + node.y;
-      this.drawNode(x, y, 4, 'blue');
+      this.drawNode(x, y, 2, 'blue');
     }
   }
 

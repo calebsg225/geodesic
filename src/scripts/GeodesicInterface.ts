@@ -75,6 +75,8 @@ class GeodesicInterface {
       onRotate(e.movementX, e.movementY);
     });
     canvas.addEventListener('wheel', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
       onZoom(e.deltaY < 0);
     });
   }

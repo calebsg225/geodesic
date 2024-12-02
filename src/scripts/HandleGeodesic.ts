@@ -20,17 +20,17 @@ class HandleGeodesic {
   constructor(canvasParentElement: HTMLElement, panelParentElement: HTMLElement) {
     this.baseType = 'icosahedron';
     this.nodes = new Map();
-    this.zoom = 380;
+    this.zoom = 470;
     this.zoomMin = 50;
     this.zoomStep = 20;
     this.zoomMax = 5000;
     this.bases = new Map();
-    this.frequency = 10;
+    this.frequency = 20;
     this.rotationRads = 0.008;
 
     this.utils = new Utils();
     this.geodesicInterface = new GeodesicInterface(canvasParentElement, panelParentElement);
-    this.drawCanvas = new DrawCanvas(this.geodesicInterface.getCanvasElement(), 1000, 800);
+    this.drawCanvas = new DrawCanvas(this.geodesicInterface.getCanvasElement(), 950, 950);
 
     this.geodesicInterface.generateEventListeners(this.rotate, this.updateZoom);
 
@@ -253,7 +253,7 @@ class HandleGeodesic {
     //this.drawCanvas.drawFaces(this.nodes);
     //this.drawCanvas.drawEdges(this.nodes, 'blue', true);
     this.drawCanvas.drawEdges(this.nodes, 'red');
-    //this.drawCanvas.drawNodes(this.nodes);
+    this.drawCanvas.drawNodes(this.nodes);
   }
 
   /**
