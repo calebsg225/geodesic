@@ -74,15 +74,15 @@ class DrawCanvas {
         inFront.push(key);
         return;
       }
-      const x = this.centerX + node.x;
-      const y = this.centerY + node.y;
+      //const x = this.centerX + node.x;
+      //const y = this.centerY + node.y;
       //this.drawNode(x, y, 2, '#FFC7C7');
     });
     for (let i = 0; i < inFront.length; i++) {
       const node = nodes.get(inFront[i])!;
       const x = this.centerX + node.x;
       const y = this.centerY + node.y;
-      this.drawNode(x, y, 2, 'blue');
+      this.drawNode(x, y, 1, 'blue');
     }
   }
 
@@ -113,12 +113,16 @@ class DrawCanvas {
         }
       }
     }
-    inMiddle.push(...inFront);
-    // render middle second, render front third
-    for (let i = 0; i < inMiddle.length; i++) {
-      const [x, y, dx, dy] = inMiddle[i];
-      this.drawEdge(x, y, dx, dy, color);
+
+    const drawLevelEdges = (arr: number[][]) => {
+      for (let i = 0; i < arr.length; i++) {
+        const [x, y, dx, dy] = arr[i];
+        this.drawEdge(x, y, dx, dy, color);
+      }
     }
+    // render middle second, render front third
+    drawLevelEdges(inMiddle);
+    drawLevelEdges(inFront);
   }
 
   drawFaces = (nodes: Geo): void => {

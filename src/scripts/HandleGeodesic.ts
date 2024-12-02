@@ -25,7 +25,8 @@ class HandleGeodesic {
     this.zoomStep = 20;
     this.zoomMax = 5000;
     this.bases = new Map();
-    this.frequency = 20;
+    this.frequency = 500;
+    console.log('frequency: ', this.frequency);
     this.rotationRads = 0.008;
 
     this.utils = new Utils();
@@ -251,9 +252,9 @@ class HandleGeodesic {
   private render = () => {
     this.drawCanvas.clearCanvas();
     //this.drawCanvas.drawFaces(this.nodes);
-    //this.drawCanvas.drawEdges(this.nodes, 'blue', true);
+    //this.drawCanvas.drawEdges(this.nodes, 'red', true);
     this.drawCanvas.drawEdges(this.nodes, 'red');
-    this.drawCanvas.drawNodes(this.nodes);
+    //this.drawCanvas.drawNodes(this.nodes);
   }
 
   /**
