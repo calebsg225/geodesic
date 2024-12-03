@@ -2,7 +2,7 @@ import DrawCanvas from './DrawCanvas';
 import GeodesicInterface from './GeodesicInterface';
 import GeoNode from "./geodesic/node";
 import Utils from './helpers/Utils';
-import { NodeConnections, Geo, BaseType } from '../types/geodesicTypes';
+import { NodeConnections, Geo, BaseType, DrawStyles, DrawOptions } from '../types/geodesicTypes';
 
 class HandleGeodesic {
   private geodesicInterface: GeodesicInterface;
@@ -17,7 +17,34 @@ class HandleGeodesic {
   private zoomMax: number;
   private frequency: number;
   private rotationRads: number;
+  private drawOptions: DrawOptions;
+  private drawStyles: DrawStyles;
   constructor(canvasParentElement: HTMLElement, panelParentElement: HTMLElement) {
+    this.drawOptions = {}
+    this.drawStyles = {
+      nodeColor: 'blue',
+      backNodeColor: '#FFC7C7',
+      nodeSize: 2,
+
+      edgeColor: 'red',
+      backEdgeColor: '#DDE0FF',
+      edgeWidth: 1,
+
+      faceColor: 'blue',
+      backFaceColor: 'grey',
+
+      baseNodeColor: 'blue',
+      backBaseNodeColor: '#FFC7C7',
+      baseNodeSize: 4,
+
+      baseEdgeColor: 'blue',
+      backBaseEdgeColor: '#DDE0FF',
+      baseEdgeWidth: 1,
+
+      baseFaceColor: 'blue',
+      backBaseFaceColor: 'grey'
+    }
+
     this.baseType = 'icosahedron';
     this.nodes = new Map();
     this.zoom = 470;
@@ -25,8 +52,7 @@ class HandleGeodesic {
     this.zoomStep = 20;
     this.zoomMax = 5000;
     this.bases = new Map();
-    this.frequency = 500;
-    console.log('frequency: ', this.frequency);
+    this.frequency = 1;
     this.rotationRads = 0.008;
 
     this.utils = new Utils();
@@ -157,6 +183,7 @@ class HandleGeodesic {
   }
 
   private generateIcosahedronAtFrequency = (): void => {
+    this.nodes = new Map();
     const nodes = this.bases.get(this.baseType)!;
     const v = this.frequency;
     const visited = new Set<string>();
@@ -250,11 +277,7 @@ class HandleGeodesic {
   }
 
   private render = () => {
-    this.drawCanvas.clearCanvas();
-    //this.drawCanvas.drawFaces(this.nodes);
-    //this.drawCanvas.drawEdges(this.nodes, 'red', true);
-    this.drawCanvas.drawEdges(this.nodes, 'red');
-    //this.drawCanvas.drawNodes(this.nodes);
+    this.drawCanvas.draw(this.nodes, this.drawOptions, this.drawStyles);
   }
 
   /**

@@ -1,4 +1,4 @@
-import { Geo } from "../types/geodesicTypes";
+import { DrawOptions, DrawStyles, Geo } from "../types/geodesicTypes";
 import Utils from "./helpers/Utils";
 
 class DrawCanvas {
@@ -19,10 +19,28 @@ class DrawCanvas {
     this.centerY = height/2;
   }
 
-  clearCanvas = () => {
+  private clearCanvas = () => {
     if (!this.ctx) return;
     this.ctx.fillStyle = "white";
     this.ctx.fillRect(0, 0, this.width, this.height);
+  }
+
+  // draws all selected aspects of the nodes inputed
+  // all in one function so everything can be drawn in order from back to front based on z value
+  draw = (nodes: Geo, options: DrawOptions, styles: DrawStyles) =>  {
+    this.clearCanvas();
+    // back base nodes
+    // back nodes
+    // back faces
+    // back edges
+    // back base faces
+    // back base edges
+    // front base edges
+    // front base faces
+    // front edges
+    // front faces
+    // front nodes
+    // front base nodes
   }
 
   private drawNode = (x: number, y: number, size: number, color: string): void => {
@@ -74,15 +92,15 @@ class DrawCanvas {
         inFront.push(key);
         return;
       }
-      //const x = this.centerX + node.x;
-      //const y = this.centerY + node.y;
-      //this.drawNode(x, y, 2, '#FFC7C7');
+      /* const x = this.centerX + node.x;
+      const y = this.centerY + node.y;
+      this.drawNode(x, y, 2, '#FFC7C7'); */
     });
     for (let i = 0; i < inFront.length; i++) {
       const node = nodes.get(inFront[i])!;
       const x = this.centerX + node.x;
       const y = this.centerY + node.y;
-      this.drawNode(x, y, 1, 'blue');
+      this.drawNode(x, y, 2, 'blue');
     }
   }
 
