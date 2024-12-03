@@ -41,7 +41,7 @@ class HandleGeodesic {
       backFaceColor: 'grey',
 
       baseNodeColor: 'blue',
-      backBaseNodeColor: '#FFC7C7',
+      backBaseNodeColor: 'red',
       baseNodeSize: 4,
 
       baseEdgeColor: 'blue',
@@ -59,7 +59,7 @@ class HandleGeodesic {
     this.zoomStep = 20;
     this.zoomMax = 5000;
     this.bases = new Map();
-    this.frequency = 10;
+    this.frequency = 1;
     this.rotationRads = 0.002;
 
     this.utils = new Utils();

@@ -55,6 +55,7 @@ class DrawCanvas {
     if (options.baseNodes !== 'back') {
       this.drawNodes(frontBaseNodes, styles.baseNodeSize, styles.baseNodeColor);
     }
+    this.drawFaces(nodes);
   }
 
   private drawNode = (x: number, y: number, size: number, color: string): void => {
@@ -167,6 +168,7 @@ class DrawCanvas {
 
   private drawFaces = (nodes: Geo) => {
     const drawn = new Set();
+    const backFaces: number[][][] = [];
     for (const k of nodes.keys()) {
       const node = nodes.get(k)!;
       const faces = node.connections.faces;
@@ -183,11 +185,16 @@ class DrawCanvas {
           z += nodes.get(p)!.z;
           pairs.push([x, y]);
         }
-        if (z/3 >= 0) {
-          this.drawFace(pairs, 'red');
+        if (z/3 < 0) {
+          this.drawFace(pairs, '#ff0101aa');
+        } else {
+          backFaces.push(pairs);
         }
-        drawn.add(faces[j]);
+        drawn.add(faces[j].split('').sort().join(''));
       }
+    }
+    for (const face of backFaces) {
+      this.drawFace(face, '#ff0101aa');
     }
   }
 }
