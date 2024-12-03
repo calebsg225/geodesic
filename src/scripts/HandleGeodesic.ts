@@ -24,14 +24,14 @@ class HandleGeodesic {
       nodes: 'both',
       edges: 'both',
       faces: '',
-      baseNodes: '',
+      baseNodes: 'both',
       baseEdges: '',
       baseFaces: ''
     }
     this.drawStyles = {
       nodeColor: 'blue',
       backNodeColor: '#FFC7C7',
-      nodeSize: 5,
+      nodeSize: 1,
 
       edgeColor: 'red',
       backEdgeColor: '#DDE0FF',
