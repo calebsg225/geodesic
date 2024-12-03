@@ -29,7 +29,8 @@ class DrawCanvas {
   // all in one function so everything can be drawn in order from back to front based on z value
   draw = (nodes: Geo, options: DrawOptions, styles: DrawStyles) =>  {
     this.clearCanvas();
-    const { frontNodes, backNodes, frontBaseNodes, backBaseNodes } = options.nodes.length ? this.separateNodes(nodes) : {frontNodes: [], backNodes: [], frontBaseNodes: [], backBaseNodes: []};
+    const { frontNodes, backNodes } = options.nodes.length ? this.separateNodes(nodes) : {frontNodes: [], backNodes: []};
+    const { frontNodes: frontBaseNodes, backNodes: backBaseNodes } = options.baseNodes.length ? this.separateNodes(nodes, true) : {frontNodes: [], backNodes: []};
     // back base nodes
     if (options.baseNodes !== 'front') {
       this.drawNodes(backBaseNodes, styles.baseNodeSize, styles.backBaseNodeColor);
@@ -99,26 +100,24 @@ class DrawCanvas {
   /**
    * separates front and back nodes based on z value
    * @param nodes nodes to separate
+   * @param baseNodes if true, calculate only base nodes
    * @returns two arrays, one for front nodes and one for back nodes
    */
-  private separateNodes = (nodes: Geo) => {
+  private separateNodes = (nodes: Geo, baseNodes: boolean = false) => {
     const frontNodes: number[][] = [];
     const backNodes: number[][] = [];
-    const frontBaseNodes: number[][] = [];
-    const backBaseNodes: number[][] = [];
     nodes.forEach((node, key) => {
       const isBaseNode = key.split(/[0-9]+/).join('').length === 1;
+      if (baseNodes && !isBaseNode) return;
       const x = this.centerX + node.x;
       const y = this.centerY + node.y;
       if (node.z >= 0) {
         frontNodes.push([x, y]);
-        if (isBaseNode) frontBaseNodes.push([x, y]);
       } else {
         backNodes.push([x, y]);
-        if (isBaseNode) backBaseNodes.push([x, y]);
       }
     });
-    return {frontNodes: frontNodes, backNodes: backNodes, frontBaseNodes: frontBaseNodes, backBaseNodes: backBaseNodes}
+    return {frontNodes: frontNodes, backNodes: backNodes}
   }
 
   private drawNodes = (nodeCoords: number[][], size: number, color: string): void => {
