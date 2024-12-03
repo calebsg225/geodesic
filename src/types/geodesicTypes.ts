@@ -7,13 +7,15 @@ type NodeConnections = {
   baseFaces?: string[]
 }
 
+type DrawSetting = '' | 'front' | 'back' | 'both';
+
 type DrawOptions = {
-  edges?: boolean,
-  nodes?: boolean,
-  faces?: boolean,
-  baseEdges?: boolean,
-  baseNodes?: boolean,
-  baseFaces?: boolean,
+  edges: DrawSetting,
+  nodes: DrawSetting,
+  faces: DrawSetting,
+  baseEdges: DrawSetting,
+  baseNodes: DrawSetting,
+  baseFaces: DrawSetting,
 }
 
 type DrawStyles = {

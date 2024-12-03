@@ -29,8 +29,12 @@ class DrawCanvas {
   // all in one function so everything can be drawn in order from back to front based on z value
   draw = (nodes: Geo, options: DrawOptions, styles: DrawStyles) =>  {
     this.clearCanvas();
+    const { frontNodes, backNodes } = options.nodes.length ? this.separateNodes(nodes) : {frontNodes: [], backNodes: []};
     // back base nodes
     // back nodes
+    if (options.nodes !== 'front') {
+      this.drawNodes(backNodes, styles.nodeSize, styles.backNodeColor);
+    }
     // back faces
     // back edges
     // back base faces
@@ -40,6 +44,9 @@ class DrawCanvas {
     // front edges
     // front faces
     // front nodes
+    if (options.nodes !== 'back') {
+      this.drawNodes(frontNodes, styles.nodeSize, styles.nodeColor);
+    }
     // front base nodes
   }
 
@@ -83,28 +90,33 @@ class DrawCanvas {
     this.ctx.stroke();
   }
 
-  drawNodes = (nodes: Geo): void => {
-    // TODO: render nodes, edges, and faces in tandum?
-    // keys of nodes to generate after
-    const inFront: string[] = [];
-    nodes.forEach((node, key) => {
-      if (node.z >= 0) {
-        inFront.push(key);
-        return;
-      }
-      /* const x = this.centerX + node.x;
-      const y = this.centerY + node.y;
-      this.drawNode(x, y, 2, '#FFC7C7'); */
-    });
-    for (let i = 0; i < inFront.length; i++) {
-      const node = nodes.get(inFront[i])!;
+  /**
+   * separates front and back nodes based on z value
+   * @param nodes nodes to separate
+   * @returns two arrays, one for front nodes and one for back nodes
+   */
+  private separateNodes = (nodes: Geo) => {
+    const frontNodes: number[][] = [];
+    const backNodes: number[][] = [];
+    nodes.forEach(node => {
       const x = this.centerX + node.x;
       const y = this.centerY + node.y;
-      this.drawNode(x, y, 2, 'blue');
+      if (node.z >= 0) {
+        frontNodes.push([x, y]);
+      } else {
+        backNodes.push([x, y]);
+      }
+    });
+    return {frontNodes: frontNodes, backNodes: backNodes}
+  }
+
+  private drawNodes = (nodeCoords: number[][], size: number, color: string): void => {
+    for (const [x, y] of nodeCoords) {
+      this.drawNode(x, y, size, color);
     }
   }
 
-  drawEdges = (nodes: Geo, color: string, drawBaseEdges: boolean = false): void => {
+  private drawEdges = (nodes: Geo, color: string, drawBaseEdges: boolean = false) => {
     const inFront: number[][] = [];
     const inMiddle: number[][] = [];
     for (const k of nodes.keys()) {
@@ -143,7 +155,7 @@ class DrawCanvas {
     drawLevelEdges(inFront);
   }
 
-  drawFaces = (nodes: Geo): void => {
+  private drawFaces = (nodes: Geo) => {
     const drawn = new Set();
     for (const k of nodes.keys()) {
       const node = nodes.get(k)!;

@@ -20,11 +20,18 @@ class HandleGeodesic {
   private drawOptions: DrawOptions;
   private drawStyles: DrawStyles;
   constructor(canvasParentElement: HTMLElement, panelParentElement: HTMLElement) {
-    this.drawOptions = {}
+    this.drawOptions = {
+      nodes: 'both',
+      edges: 'both',
+      faces: '',
+      baseNodes: '',
+      baseEdges: '',
+      baseFaces: ''
+    }
     this.drawStyles = {
       nodeColor: 'blue',
       backNodeColor: '#FFC7C7',
-      nodeSize: 2,
+      nodeSize: 5,
 
       edgeColor: 'red',
       backEdgeColor: '#DDE0FF',
@@ -52,8 +59,8 @@ class HandleGeodesic {
     this.zoomStep = 20;
     this.zoomMax = 5000;
     this.bases = new Map();
-    this.frequency = 1;
-    this.rotationRads = 0.008;
+    this.frequency = 10;
+    this.rotationRads = 0.002;
 
     this.utils = new Utils();
     this.geodesicInterface = new GeodesicInterface(canvasParentElement, panelParentElement);
