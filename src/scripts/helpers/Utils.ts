@@ -15,6 +15,16 @@ class Utils {
     return Math.sqrt((dx - x)**2 + (dy - y)**2 + (dz - z)**2);
   }
 
+  // TODO: create function to calculate edge order for face generation for n nodes where n >= 4
+  // possible solution: 
+  // 1) given range of x,y,z pairs, calculate Xcom, Ycom, and Zcom
+  // 2) calculate angle between each node and a calculated axis
+  // 3) order by angle size
+
+  generateKeyName = (face: string[], i: number, j: number, k: number, v: number): string => {
+    return `${i ? `${face[0]}${i%v ? i : ''}` : ''}${j ? `${face[1]}${j%v ? j : ''}` : ''}${k ? `${face[2]}${k%v ? k : ''}` : ''}`;
+  }
+
   numFromChar = (str: string): number => {
     return str.charCodeAt(0) - 'a'.charCodeAt(0);
   }

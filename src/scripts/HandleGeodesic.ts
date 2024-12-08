@@ -59,7 +59,7 @@ class HandleGeodesic {
     this.zoomStep = 20;
     this.zoomMax = 5000;
     this.bases = new Map();
-    this.frequency = 1;
+    this.frequency = 10;
     this.rotationRads = 0.002;
 
     this.utils = new Utils();
@@ -191,15 +191,15 @@ class HandleGeodesic {
 
   private generateIcosahedronAtFrequency = (): void => {
     this.nodes = new Map();
-    const nodes = this.bases.get(this.baseType)!;
+    const baseNodes = this.bases.get(this.baseType)!;
     const v = this.frequency;
     const visited = new Set<string>();
 
     // map of string keys and edge connections to add to nodes at string key
     const addEdgeConnections: {[key: string]: string[]} = {};
 
-    for (const k of nodes.keys()) {
-      const node = nodes.get(k)!;
+    for (const k of baseNodes.keys()) {
+      const node = baseNodes.get(k)!;
       const faces = node.connections.faces;
       for (let f = 0; f < faces.length; f++) {
         // if face has been drawn, skip
@@ -211,13 +211,13 @@ class HandleGeodesic {
           for (let j = v-i; j >= 0; j--) {
             const connections: NodeConnections = { edges: [], faces: [] }
             const k = v-i-j;
-            const key = `${i ? `${face[0]}${i}` : ''}${j ? `${face[1]}${j}` : ''}${k ? `${face[2]}${k}` : ''}`;
+            const key = this.utils.generateKeyName(face, i, j, k, v);
 
             // add base connections to base vertices
-            const baseKey = `${i ? `${face[0]}` : ''}${j ? `${face[1]}` : ''}${k ? `${face[2]}` : ''}`;
-            if (nodes.has(baseKey)) {
-              connections.baseEdges = nodes.get(`${baseKey}`)!.connections.baseEdges?.map(val => val + `${v}`);
-              connections.baseFaces = nodes.get(`${baseKey}`)!.connections.baseFaces;
+            //const baseKey = `${i ? `${face[0]}` : ''}${j ? `${face[1]}` : ''}${k ? `${face[2]}` : ''}`;
+            if (baseNodes.has(key)) {
+              connections.baseEdges = baseNodes.get(`${key}`)!.connections.baseEdges;
+              connections.baseFaces = baseNodes.get(`${key}`)!.connections.baseFaces;
             }
 
             if (i && j && k) { // base face node
@@ -226,7 +226,7 @@ class HandleGeodesic {
                   const i2 = i+(o-1);
                   const j2 = j+((o+1+p)%3 - 1);
                   const k2 = v-i2-j2;
-                  const edgeKey = `${i2 ? `${face[0]}${i2}` : ''}${j2 ? `${face[1]}${j2}` : ''}${k2 ? `${face[2]}${k2}` : ''}`;
+                  const edgeKey = this.utils.generateKeyName(face, i2, j2, k2, v);
                   connections.edges.push(edgeKey);
                   if (i2 && j2 && k2) continue; // face node
                   // edge node
@@ -240,7 +240,7 @@ class HandleGeodesic {
                 const i2 = i ? i+p : 0;
                 const j2 = j ? j+(i ? -p : p) : 0;
                 const k2 = k ? k-p : 0;
-                const edgeKey = `${i2 ? `${face[0]}${i2}` : ''}${j2 ? `${face[1]}${j2}` : ''}${k2 ? `${face[2]}${k2}` : ''}`;
+                const edgeKey = this.utils.generateKeyName(face, i2, j2, k2, v);
                 connections.edges.push(edgeKey);
 
                 if (i2 === v || j2 === v || k2 === v) {
@@ -253,9 +253,9 @@ class HandleGeodesic {
 
             // if this node has been generated, skip
             if (this.nodes.has(key)) continue;
-            const {x:x0, y:y0, z:z0} = nodes.get(face[0])!;
-            const {x:x1, y:y1, z:z1} = nodes.get(face[1])!;
-            const {x:x2, y:y2, z:z2} = nodes.get(face[2])!;
+            const {x:x0, y:y0, z:z0} = baseNodes.get(face[0])!;
+            const {x:x1, y:y1, z:z1} = baseNodes.get(face[1])!;
+            const {x:x2, y:y2, z:z2} = baseNodes.get(face[2])!;
             const {x, y, z} = this.utils.icosahedronIntermediateNode(i, j, k, x0, y0, z0, x1, y1, z1, x2, y2, z2);
             this.nodes.set(key, new GeoNode(x*this.zoom, y*this.zoom, z*this.zoom, connections));
           }

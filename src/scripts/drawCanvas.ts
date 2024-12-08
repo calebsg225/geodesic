@@ -55,7 +55,9 @@ class DrawCanvas {
     if (options.baseNodes !== 'back') {
       this.drawNodes(frontBaseNodes, styles.baseNodeSize, styles.baseNodeColor);
     }
-    this.drawFaces(nodes);
+    //this.drawFaces(nodes);
+    this.drawEdges(nodes, 'black');
+    this.drawEdges(nodes, 'red', true);
   }
 
   private drawNode = (x: number, y: number, size: number, color: string): void => {
@@ -74,9 +76,6 @@ class DrawCanvas {
     this.ctx.beginPath();
     this.ctx.moveTo(x, y);
     this.ctx.lineTo(dx, dy);
-    /* this.ctx.lineWidth = 8;
-    this.ctx.strokeStyle = 'black';
-    this.ctx.stroke(); */
     this.ctx.lineWidth = 1;
     this.ctx.strokeStyle = color;
     this.ctx.lineTo(x, y);
