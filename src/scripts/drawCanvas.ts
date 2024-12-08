@@ -33,7 +33,8 @@ class DrawCanvas {
     const { frontNodes, backNodes } = options.nodes.length ? this.separateNodes(nodes) : {frontNodes: [], backNodes: []};
     const { frontNodes: frontBaseNodes, backNodes: backBaseNodes } = options.baseNodes.length ? this.separateNodes(nodes, true) : {frontNodes: [], backNodes: []};
 
-    const { frontEdges: frontBaseEdges, backEdges: backBaseEdges } = options.baseEdges.length ? this.seperateEdges(nodes, true) : {frontEdges: [], backEdges: []};
+    const { frontEdges, backEdges } = options.edges.length ? this.separateEdges(nodes) : {frontEdges: [], backEdges: []};
+    const { frontEdges: frontBaseEdges, backEdges: backBaseEdges } = options.baseEdges.length ? this.separateEdges(nodes, true) : {frontEdges: [], backEdges: []};
     // back base nodes
     if (options.baseNodes !== 'front') {
       this.drawNodes(backBaseNodes, styles.baseNodeSize, styles.backBaseNodeColor);
@@ -44,6 +45,9 @@ class DrawCanvas {
     }
     // back faces
     // back edges
+    if (options.edges !== 'front') {
+      this.drawEdges(backEdges, styles.edgeWidth, styles.backEdgeColor);
+    }
     // back base faces
     // back base edges
     if (options.baseEdges !== 'front') {
@@ -55,6 +59,9 @@ class DrawCanvas {
     }
     // front base faces
     // front edges
+    if (options.edges !== 'back') {
+      this.drawEdges(frontEdges, styles.edgeWidth, styles.edgeColor);
+    }
     // front faces
     // front nodes
     if (options.nodes !== 'back') {
@@ -126,7 +133,7 @@ class DrawCanvas {
     return {frontNodes: frontNodes, backNodes: backNodes}
   }
 
-  private seperateEdges = (nodes: Geo, baseEdges: boolean = false) => {
+  private separateEdges = (nodes: Geo, baseEdges: boolean = false) => {
     const frontEdges: number[][] = [];
     const backEdges: number[][] = [];
     for (const k of nodes.keys()) {

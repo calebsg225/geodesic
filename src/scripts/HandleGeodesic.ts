@@ -45,8 +45,8 @@ class HandleGeodesic {
       baseNodeSize: 4,
 
       baseEdgeColor: 'red',
-      backBaseEdgeColor: '#DDE0FF',
-      baseEdgeWidth: 1,
+      backBaseEdgeColor: '#ffc7c7',
+      baseEdgeWidth: 4,
 
       baseFaceColor: 'blue',
       backBaseFaceColor: 'grey'
