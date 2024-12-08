@@ -29,8 +29,11 @@ class DrawCanvas {
   // all in one function so everything can be drawn in order from back to front based on z value
   draw = (nodes: Geo, options: DrawOptions, styles: DrawStyles) =>  {
     this.clearCanvas();
+
     const { frontNodes, backNodes } = options.nodes.length ? this.separateNodes(nodes) : {frontNodes: [], backNodes: []};
     const { frontNodes: frontBaseNodes, backNodes: backBaseNodes } = options.baseNodes.length ? this.separateNodes(nodes, true) : {frontNodes: [], backNodes: []};
+
+    const { frontEdges: frontBaseEdges, backEdges: backBaseEdges } = options.baseEdges.length ? this.seperateEdges(nodes, true) : {frontEdges: [], backEdges: []};
     // back base nodes
     if (options.baseNodes !== 'front') {
       this.drawNodes(backBaseNodes, styles.baseNodeSize, styles.backBaseNodeColor);
@@ -43,7 +46,13 @@ class DrawCanvas {
     // back edges
     // back base faces
     // back base edges
+    if (options.baseEdges !== 'front') {
+      this.drawEdges(backBaseEdges, styles.baseEdgeWidth, styles.backBaseEdgeColor);
+    }
     // front base edges
+    if (options.baseEdges !== 'back') {
+      this.drawEdges(frontBaseEdges, styles.baseEdgeWidth, styles.baseEdgeColor);
+    }
     // front base faces
     // front edges
     // front faces
@@ -56,27 +65,24 @@ class DrawCanvas {
       this.drawNodes(frontBaseNodes, styles.baseNodeSize, styles.baseNodeColor);
     }
     //this.drawFaces(nodes);
-    this.drawEdges(nodes, 'black');
-    this.drawEdges(nodes, 'red', true);
+    /* this.drawEdges(nodes, 'black');
+    this.drawEdges(nodes, 'red', true); */
   }
 
   private drawNode = (x: number, y: number, size: number, color: string): void => {
     if (!this.ctx) return;
     this.ctx.beginPath();
     this.ctx.arc(x, y, size, 0, 2*Math.PI);
-    this.ctx.strokeStyle = 'black'
-    this.ctx.lineWidth = 1
     this.ctx.fillStyle = color;
     this.ctx.fill();
-    //this.ctx.stroke();
   }
 
-  private drawEdge = (x: number, y: number, dx: number, dy: number, color: string): void => {
+  private drawEdge = (x: number, y: number, dx: number, dy: number, width: number, color: string): void => {
     if (!this.ctx) return;
     this.ctx.beginPath();
     this.ctx.moveTo(x, y);
     this.ctx.lineTo(dx, dy);
-    this.ctx.lineWidth = 1;
+    this.ctx.lineWidth = width;
     this.ctx.strokeStyle = color;
     this.ctx.lineTo(x, y);
     this.ctx.stroke();
@@ -107,7 +113,7 @@ class DrawCanvas {
     const frontNodes: number[][] = [];
     const backNodes: number[][] = [];
     nodes.forEach((node, key) => {
-      const isBaseNode = key.split(/[0-9]+/).join('').length === 1;
+      const isBaseNode = key.length === 1;
       if (baseNodes && !isBaseNode) return;
       const x = this.centerX + node.x;
       const y = this.centerY + node.y;
@@ -120,19 +126,13 @@ class DrawCanvas {
     return {frontNodes: frontNodes, backNodes: backNodes}
   }
 
-  private drawNodes = (nodeCoords: number[][], size: number, color: string): void => {
-    for (const [x, y] of nodeCoords) {
-      this.drawNode(x, y, size, color);
-    }
-  }
-
-  private drawEdges = (nodes: Geo, color: string, drawBaseEdges: boolean = false) => {
-    const inFront: number[][] = [];
-    const inMiddle: number[][] = [];
+  private seperateEdges = (nodes: Geo, baseEdges: boolean = false) => {
+    const frontEdges: number[][] = [];
+    const backEdges: number[][] = [];
     for (const k of nodes.keys()) {
       const node = nodes.get(k)!;
       // draw either base edges or main edges
-      const edges = drawBaseEdges ? node.connections.baseEdges : node.connections.edges;
+      const edges = baseEdges ? node.connections.baseEdges : node.connections.edges;
       if (!edges) continue;
       for (let j = 0; j < edges.length; j++) {
         if (this.utils.numFromChar(edges[j]) < this.utils.numFromChar(k)) continue;
@@ -143,26 +143,27 @@ class DrawCanvas {
         const dy = nodes.get(edges[j])!.y + this.centerY;
         const dz = nodes.get(edges[j])!.z;
         const aZ = this.utils.averageZ(z, dz);
-        if (aZ > 0) {
-          inFront.push([x, y, dx, dy]);
-        } else if (aZ === 0) {
-          inMiddle.push([x, y, dx, dy]);
+        if (aZ >= 0) {
+          frontEdges.push([x, y, dx, dy]);
         } else {
-          // render back first
-          this.drawEdge(x, y, dx, dy, '#DDE0FF');
+          backEdges.push([x, y, dx, dy]);
         }
       }
     }
+    return {frontEdges: frontEdges, backEdges: backEdges}
+  }
 
-    const drawLevelEdges = (arr: number[][]) => {
-      for (let i = 0; i < arr.length; i++) {
-        const [x, y, dx, dy] = arr[i];
-        this.drawEdge(x, y, dx, dy, color);
-      }
+  private drawNodes = (nodeCoords: number[][], size: number, color: string): void => {
+    for (const [x, y] of nodeCoords) {
+      this.drawNode(x, y, size, color);
     }
-    // render middle second, render front third
-    drawLevelEdges(inMiddle);
-    drawLevelEdges(inFront);
+  }
+
+  private drawEdges = (edges: number[][], width: number, color: string) => {
+    for (let i = 0; i < edges.length; i++) {
+      const [x, y, dx, dy] = edges[i];
+      this.drawEdge(x, y, dx, dy, width, color);
+    }
   }
 
   private drawFaces = (nodes: Geo) => {

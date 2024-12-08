@@ -25,7 +25,7 @@ class HandleGeodesic {
       edges: 'both',
       faces: '',
       baseNodes: 'both',
-      baseEdges: '',
+      baseEdges: 'both',
       baseFaces: ''
     }
     this.drawStyles = {
@@ -33,7 +33,7 @@ class HandleGeodesic {
       backNodeColor: '#FFC7C7',
       nodeSize: 1,
 
-      edgeColor: 'red',
+      edgeColor: 'black',
       backEdgeColor: '#DDE0FF',
       edgeWidth: 1,
 
@@ -44,7 +44,7 @@ class HandleGeodesic {
       backBaseNodeColor: 'red',
       baseNodeSize: 4,
 
-      baseEdgeColor: 'blue',
+      baseEdgeColor: 'red',
       backBaseEdgeColor: '#DDE0FF',
       baseEdgeWidth: 1,
 
