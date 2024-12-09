@@ -21,7 +21,7 @@ class HandleGeodesic {
   private drawStyles: DrawStyles;
   constructor(canvasParentElement: HTMLElement, panelParentElement: HTMLElement) {
     this.drawOptions = {
-      nodes: 'both',
+      nodes: '',
       edges: 'both',
       faces: '',
       baseNodes: 'both',
@@ -31,17 +31,17 @@ class HandleGeodesic {
     this.drawStyles = {
       nodeColor: 'blue',
       backNodeColor: '#FFC7C7',
-      nodeSize: 1,
+      nodeSize: 2,
 
       edgeColor: 'black',
-      backEdgeColor: '#DDE0FF',
+      backEdgeColor: '#D8D8D8',
       edgeWidth: 1,
 
       faceColor: 'blue',
       backFaceColor: 'grey',
 
       baseNodeColor: 'blue',
-      backBaseNodeColor: 'red',
+      backBaseNodeColor: 'blue',
       baseNodeSize: 4,
 
       baseEdgeColor: 'red',
@@ -216,8 +216,8 @@ class HandleGeodesic {
             // add base connections to base vertices
             //const baseKey = `${i ? `${face[0]}` : ''}${j ? `${face[1]}` : ''}${k ? `${face[2]}` : ''}`;
             if (baseNodes.has(key)) {
-              connections.baseEdges = baseNodes.get(`${key}`)!.connections.baseEdges;
-              connections.baseFaces = baseNodes.get(`${key}`)!.connections.baseFaces;
+              connections.baseEdges = baseNodes.get(key)!.connections.baseEdges!;
+              connections.baseFaces = baseNodes.get(key)!.connections.baseFaces!;
             }
 
             if (i && j && k) { // base face node

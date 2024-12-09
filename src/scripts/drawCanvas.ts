@@ -30,48 +30,54 @@ class DrawCanvas {
   draw = (nodes: Geo, options: DrawOptions, styles: DrawStyles) =>  {
     this.clearCanvas();
 
-    const { frontNodes, backNodes } = options.nodes.length ? this.separateNodes(nodes) : {frontNodes: [], backNodes: []};
-    const { frontNodes: frontBaseNodes, backNodes: backBaseNodes } = options.baseNodes.length ? this.separateNodes(nodes, true) : {frontNodes: [], backNodes: []};
+    const {
+      frontNodes,
+      backNodes,
+      frontBaseNodes,
+      backBaseNodes,
+      frontEdges,
+      backEdges,
+      frontBaseEdges,
+      backBaseEdges
+    } = this.separate(nodes);
 
-    const { frontEdges, backEdges } = options.edges.length ? this.separateEdges(nodes) : {frontEdges: [], backEdges: []};
-    const { frontEdges: frontBaseEdges, backEdges: backBaseEdges } = options.baseEdges.length ? this.separateEdges(nodes, true) : {frontEdges: [], backEdges: []};
     // back base nodes
-    if (options.baseNodes !== 'front') {
+    if (options.baseNodes.length && options.baseNodes !== 'front') {
       this.drawNodes(backBaseNodes, styles.baseNodeSize, styles.backBaseNodeColor);
     }
     // back nodes
-    if (options.nodes !== 'front') {
+    if (options.nodes.length && options.nodes !== 'front') {
       this.drawNodes(backNodes, styles.nodeSize, styles.backNodeColor);
     }
     // back faces
     // back edges
-    if (options.edges !== 'front') {
+    if (options.edges.length && options.edges !== 'front') {
       this.drawEdges(backEdges, styles.edgeWidth, styles.backEdgeColor);
     }
     // back base faces
     // back base edges
-    if (options.baseEdges !== 'front') {
+    if (options.baseEdges.length && options.baseEdges !== 'front') {
       this.drawEdges(backBaseEdges, styles.baseEdgeWidth, styles.backBaseEdgeColor);
     }
     // front base edges
-    if (options.baseEdges !== 'back') {
+    if (options.baseEdges.length && options.baseEdges !== 'back') {
       this.drawEdges(frontBaseEdges, styles.baseEdgeWidth, styles.baseEdgeColor);
     }
     // front base faces
     // front edges
-    if (options.edges !== 'back') {
+    if (options.edges.length && options.edges !== 'back') {
       this.drawEdges(frontEdges, styles.edgeWidth, styles.edgeColor);
     }
     // front faces
     // front nodes
-    if (options.nodes !== 'back') {
+    if (options.nodes.length && options.nodes !== 'back') {
       this.drawNodes(frontNodes, styles.nodeSize, styles.nodeColor);
     }
     // front base nodes
-    if (options.baseNodes !== 'back') {
+    if (options.baseNodes.length && options.baseNodes !== 'back') {
       this.drawNodes(frontBaseNodes, styles.baseNodeSize, styles.baseNodeColor);
     }
-    //this.drawFaces(nodes);
+    this.drawFaces(nodes);
     /* this.drawEdges(nodes, 'black');
     this.drawEdges(nodes, 'red', true); */
   }
@@ -108,57 +114,7 @@ class DrawCanvas {
     this.ctx.lineTo(pairs[0][0], pairs[0][1]);
     this.ctx.fill();
     this.ctx.stroke();
-  }
-
-  /**
-   * separates front and back nodes based on z value
-   * @param nodes nodes to separate
-   * @param baseNodes if true, calculate only base nodes
-   * @returns two arrays, one for front nodes and one for back nodes
-   */
-  private separateNodes = (nodes: Geo, baseNodes: boolean = false) => {
-    const frontNodes: number[][] = [];
-    const backNodes: number[][] = [];
-    nodes.forEach((node, key) => {
-      const isBaseNode = key.length === 1;
-      if (baseNodes && !isBaseNode) return;
-      const x = this.centerX + node.x;
-      const y = this.centerY + node.y;
-      if (node.z >= 0) {
-        frontNodes.push([x, y]);
-      } else {
-        backNodes.push([x, y]);
-      }
-    });
-    return {frontNodes: frontNodes, backNodes: backNodes}
-  }
-
-  private separateEdges = (nodes: Geo, baseEdges: boolean = false) => {
-    const frontEdges: number[][] = [];
-    const backEdges: number[][] = [];
-    for (const k of nodes.keys()) {
-      const node = nodes.get(k)!;
-      // draw either base edges or main edges
-      const edges = baseEdges ? node.connections.baseEdges : node.connections.edges;
-      if (!edges) continue;
-      for (let j = 0; j < edges.length; j++) {
-        if (this.utils.numFromChar(edges[j]) < this.utils.numFromChar(k)) continue;
-        const x = node.x + this.centerX;
-        const y = node.y + this.centerY;
-        const z = node.z;
-        const dx = nodes.get(edges[j])!.x + this.centerX;
-        const dy = nodes.get(edges[j])!.y + this.centerY;
-        const dz = nodes.get(edges[j])!.z;
-        const aZ = this.utils.averageZ(z, dz);
-        if (aZ >= 0) {
-          frontEdges.push([x, y, dx, dy]);
-        } else {
-          backEdges.push([x, y, dx, dy]);
-        }
-      }
-    }
-    return {frontEdges: frontEdges, backEdges: backEdges}
-  }
+  }  
 
   private drawNodes = (nodeCoords: number[][], size: number, color: string): void => {
     for (const [x, y] of nodeCoords) {
@@ -173,12 +129,135 @@ class DrawCanvas {
     }
   }
 
-  private drawFaces = (nodes: Geo) => {
+  /**
+   * separates geodesic structure into groups based on type and z value
+   * @param nodes nodes of geodesic structure to separate
+   * @returns 
+   */
+  private separate = (nodes: Geo) => {
+    const frontNodes: number[][] = [];
+    const backNodes: number[][] = [];
+    const frontBaseNodes: number[][] = [];
+    const backBaseNodes: number[][] = [];
+
+    const frontEdges: number[][] = [];
+    const backEdges: number[][] = [];
+    const frontBaseEdges: number[][] = [];
+    const backBaseEdges: number[][] = [];
+
+    const frontFaces: number[][][] = [];
+    const backFaces: number[][][] = [];
+    const frontBaseFaces: number[][][] = [];
+    const backBaseFaces: number[][][] = [];
+
+    const separatedEdges = new Set<string>();
+    const separatedBaseEdges = new Set<string>();
+
+    for (const k of nodes.keys()) {
+      const isBaseNode = k.length === 1;
+
+      const node = nodes.get(k)!;
+      const { edges, baseEdges } = node.connections;
+
+      const x = this.centerX + node.x;
+      const y = this.centerY + node.y;
+
+      // handle node separation
+      if (node.z >= 0) {
+        frontNodes.push([x,y]);
+        if (isBaseNode) frontBaseNodes.push([x,y]);
+      } else {
+        backNodes.push([x,y]);
+        if (isBaseNode) backBaseNodes.push([x,y]);
+      }
+
+      if (baseEdges) { // is a base node
+        // bfs through base edges
+        for (let i = 0; i < baseEdges.length; i++) {
+          // if already separated, continue
+          if (separatedBaseEdges.has( [baseEdges[i], k].sort().join('') )) continue;
+          const dx = nodes.get(baseEdges[i])!.x + this.centerX;
+          const dy = nodes.get(baseEdges[i])!.y + this.centerY;
+          const aZ = this.utils.averageZ(node.z, nodes.get(baseEdges[i])!.z);
+          if (aZ >= 0) {
+            frontBaseEdges.push([x, y, dx, dy]);
+          } else {
+            backBaseEdges.push([x, y, dx, dy]);
+          }
+          separatedBaseEdges.add( [baseEdges[i], k].sort().join('') );
+        }
+      }
+
+      // bfs through edges
+      for (let i = 0; i < edges.length; i++) {
+        // if already separated, continue
+        if (separatedEdges.has( [edges[i], k].sort().join('') )) continue;
+        const dx = nodes.get(edges[i])!.x + this.centerX;
+        const dy = nodes.get(edges[i])!.y + this.centerY;
+        const aZ = this.utils.averageZ(node.z, nodes.get(edges[i])!.z);
+        if (aZ >= 0) {
+          frontEdges.push([x, y, dx, dy]);
+        } else {
+          backEdges.push([x, y, dx, dy]);
+        }
+        separatedEdges.add( [edges[i], k].sort().join('') );
+      }
+
+    }
+
+    return {
+      frontNodes,
+      backNodes,
+      frontBaseNodes,
+      backBaseNodes,
+
+      frontEdges,
+      backEdges,
+      frontBaseEdges,
+      backBaseEdges,
+
+      frontFaces,
+      backFaces,
+      frontBaseFaces,
+      backBaseFaces
+    }
+  }
+
+  separateFaces = (nodes: Geo, baseFaces: boolean = false) => {
+    const drawn = new Set();
+    const frontFaces: number[][][] = [];
+    const backFaces: number[][][] = [];
+    for (const k of nodes.keys()) {
+      const faces = baseFaces ? nodes.get(k)!.connections.baseFaces! : nodes.get(k)!.connections.faces;
+      for (let j = 0; j < faces.length; j++) {
+        // if this particular face has been drawn, skip it
+        if (drawn.has(faces[j].split('').sort().join(''))) continue;
+        const pairs: number[][] = [];
+        // used to calculate if z is behind
+        let z = 0;
+        // draw each face
+        for (const p of faces[j]) {
+          const x = nodes.get(p)!.x + this.centerX;
+          const y = nodes.get(p)!.y + this.centerY;
+          z += nodes.get(p)!.z;
+          pairs.push([x, y]);
+        }
+        if (z/3 < 0) {
+          this.drawFace(pairs, '#ff0101aa');
+        } else {
+          backFaces.push(pairs);
+        }
+        drawn.add(faces[j].split('').sort().join(''));
+      }
+    }
+    return {frontFaces: frontFaces, backFaces: backFaces}
+  }
+
+  drawFaces = (nodes: Geo) => {
     const drawn = new Set();
     const backFaces: number[][][] = [];
     for (const k of nodes.keys()) {
-      const node = nodes.get(k)!;
-      const faces = node.connections.faces;
+      const faces = nodes.get(k)!.connections.faces;
       for (let j = 0; j < faces.length; j++) {
         // if this particular face has been drawn, skip it
         if (drawn.has(faces[j].split('').sort().join(''))) continue;
