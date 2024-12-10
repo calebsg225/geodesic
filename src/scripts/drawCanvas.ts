@@ -38,7 +38,9 @@ class DrawCanvas {
       frontEdges,
       backEdges,
       frontBaseEdges,
-      backBaseEdges
+      backBaseEdges,
+
+      labelNodes
     } = this.separate(nodes);
 
     // back base nodes
@@ -78,8 +80,24 @@ class DrawCanvas {
       this.drawNodes(frontBaseNodes, styles.baseNodeSize, styles.baseNodeColor);
     }
     this.drawFaces(nodes);
+    //this.labelNodes(labelNodes);
     /* this.drawEdges(nodes, 'black');
     this.drawEdges(nodes, 'red', true); */
+  }
+
+  private labelNode = (x: number, y: number, text: string) => {
+    if (!this.ctx) return;
+    const s = 12;
+    this.ctx.font = `Bold ${4*s}px Arial`;
+    this.ctx.fillStyle = "red";
+    this.ctx.fillText(text.toUpperCase(), x-s, y+s);
+  }
+
+  private labelNodes = (toLabel: any[][]) => {
+    for (const t of toLabel) {
+      const [x, y, k] = t;
+      this.labelNode(x, y, k);
+    }
   }
 
   private drawNode = (x: number, y: number, size: number, color: string): void => {
@@ -150,6 +168,8 @@ class DrawCanvas {
     const frontBaseFaces: number[][][] = [];
     const backBaseFaces: number[][][] = [];
 
+    const labelNodes: any[][] = [];
+
     const separatedEdges = new Set<string>();
     const separatedBaseEdges = new Set<string>();
 
@@ -170,6 +190,8 @@ class DrawCanvas {
         backNodes.push([x,y]);
         if (isBaseNode) backBaseNodes.push([x,y]);
       }
+
+      if (isBaseNode) labelNodes.push([x, y, k]);
 
       if (baseEdges) { // is a base node
         // bfs through base edges
@@ -219,7 +241,9 @@ class DrawCanvas {
       frontFaces,
       backFaces,
       frontBaseFaces,
-      backBaseFaces
+      backBaseFaces,
+
+      labelNodes
     }
   }
 
