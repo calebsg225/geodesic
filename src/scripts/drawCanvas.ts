@@ -41,6 +41,8 @@ class DrawCanvas {
       backBaseEdges,
       frontFaces,
       backFaces,
+      frontBaseFaces,
+      backBaseFaces,
 
       labelNodes
     } = this.separate(nodes);
@@ -62,6 +64,9 @@ class DrawCanvas {
       this.drawEdges(backEdges, styles.edgeWidth, styles.backEdgeColor);
     }
     // back base faces
+    if (options.baseFaces.length && options.baseFaces !== 'front') {
+      this.drawFaces(backBaseFaces, styles.backBaseFaceColor);
+    }
     // back base edges
     if (options.baseEdges.length && options.baseEdges !== 'front') {
       this.drawEdges(backBaseEdges, styles.baseEdgeWidth, styles.backBaseEdgeColor);
@@ -71,6 +76,9 @@ class DrawCanvas {
       this.drawEdges(frontBaseEdges, styles.baseEdgeWidth, styles.baseEdgeColor);
     }
     // front base faces
+    if (options.baseFaces.length && options.baseFaces !== 'back') {
+      this.drawFaces(frontBaseFaces, styles.baseFaceColor);
+    }
     // front edges
     if (options.edges.length && options.edges !== 'back') {
       this.drawEdges(frontEdges, styles.edgeWidth, styles.edgeColor);
@@ -87,10 +95,7 @@ class DrawCanvas {
     if (options.baseNodes.length && options.baseNodes !== 'back') {
       this.drawNodes(frontBaseNodes, styles.baseNodeSize, styles.baseNodeColor);
     }
-    //this.drawFaces(nodes);
     //this.labelNodes(labelNodes);
-    /* this.drawEdges(nodes, 'black');
-    this.drawEdges(nodes, 'red', true); */
   }
 
   private labelNode = (x: number, y: number, text: string) => {
@@ -101,7 +106,7 @@ class DrawCanvas {
     this.ctx.fillText(text.toUpperCase(), x-s, y+s);
   }
 
-  private labelNodes = (toLabel: any[][]) => {
+  labelNodes = (toLabel: any[][]) => {
     for (const t of toLabel) {
       const [x, y, k] = t;
       this.labelNode(x, y, k);
@@ -139,7 +144,7 @@ class DrawCanvas {
     }
     this.ctx.lineTo(pairs[0][0], pairs[0][1]);
     this.ctx.fill();
-    this.ctx.stroke();
+    //this.ctx.stroke();
   }  
 
   private drawNodes = (nodeCoords: number[][], size: number, color: string): void => {
@@ -213,7 +218,7 @@ class DrawCanvas {
       if (baseEdges) { // is a base node
         // bfs through base edges
         for (let i = 0; i < baseEdges.length; i++) {
-          // if already separated, continue
+          // if already separated base edge, continue
           if (separatedBaseEdges.has( [baseEdges[i], k].sort().join('') )) continue;
           const dx = nodes.get(baseEdges[i])!.x + this.centerX;
           const dy = nodes.get(baseEdges[i])!.y + this.centerY;
@@ -224,6 +229,29 @@ class DrawCanvas {
             backBaseEdges.push([x, y, dx, dy]);
           }
           separatedBaseEdges.add( [baseEdges[i], k].sort().join('') );
+        }
+      }
+
+      if (baseFaces) { // is a base node
+        // bfs through base faces
+        for (let i = 0; i < baseFaces.length; i++) {
+          // if already separated base face, continue
+          if (separatedBaseFaces.has( baseFaces[i].split('-').sort().join('') )) continue;
+          const pairs: number[][] = [];
+          // used to calculate if average z is positive
+          let z = 0;
+          for (const p of baseFaces[i].split('-')) {
+            const x = nodes.get(p)!.x + this.centerX;
+            const y = nodes.get(p)!.y + this.centerY;
+            z += nodes.get(p)!.z;
+            pairs.push([x, y]);
+          }
+          if (z/3 >= 0) {
+            frontBaseFaces.push(pairs);
+          } else {
+            backBaseFaces.push(pairs);
+          }
+          separatedBaseFaces.add( baseFaces[i].split('-').sort().join('') );
         }
       }
 
@@ -247,9 +275,8 @@ class DrawCanvas {
         // if already separated, continue
         if (separatedFaces.has( faces[i].split('-').sort().join('') )) continue;
         const pairs: number[][] = [];
-        // used to calculate if z is behind
+        // used to calculate if average z is positive
         let z = 0;
-        // draw each face
         for (const p of faces[i].split('-')) {
           const x = nodes.get(p)!.x + this.centerX;
           const y = nodes.get(p)!.y + this.centerY;
@@ -284,36 +311,6 @@ class DrawCanvas {
 
       labelNodes
     }
-  }
-
-  separateFaces = (nodes: Geo, baseFaces: boolean = false) => {
-    const drawn = new Set();
-    const frontFaces: number[][][] = [];
-    const backFaces: number[][][] = [];
-    for (const k of nodes.keys()) {
-      const faces = baseFaces ? nodes.get(k)!.connections.baseFaces! : nodes.get(k)!.connections.faces;
-      for (let j = 0; j < faces.length; j++) {
-        // if this particular face has been drawn, skip it
-        if (drawn.has(faces[j].split('').sort().join(''))) continue;
-        const pairs: number[][] = [];
-        // used to calculate if z is behind
-        let z = 0;
-        // draw each face
-        for (const p of faces[j]) {
-          const x = nodes.get(p)!.x + this.centerX;
-          const y = nodes.get(p)!.y + this.centerY;
-          z += nodes.get(p)!.z;
-          pairs.push([x, y]);
-        }
-        if (z/3 < 0) {
-          frontFaces.push(pairs);
-        } else {
-          backFaces.push(pairs);
-        }
-        drawn.add(faces[j].split('').sort().join(''));
-      }
-    }
-    return {frontFaces: frontFaces, backFaces: backFaces}
   }
 }
 

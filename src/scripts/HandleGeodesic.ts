@@ -21,35 +21,35 @@ class HandleGeodesic {
   private drawStyles: DrawStyles;
   constructor(canvasParentElement: HTMLElement, panelParentElement: HTMLElement) {
     this.drawOptions = {
-      nodes: '',
-      edges: '',
+      nodes: 'both',
+      edges: 'both',
       faces: 'both',
       baseNodes: 'both',
-      baseEdges: '',
-      baseFaces: ''
+      baseEdges: 'both',
+      baseFaces: 'both'
     }
     this.drawStyles = {
       nodeColor: 'blue',
       backNodeColor: '#FFC7C7',
-      nodeSize: 1,
+      nodeSize: 3,
 
       edgeColor: 'black',
       backEdgeColor: '#D8D8D8',
       edgeWidth: 1,
 
-      faceColor: '#0800FFa0',
-      backFaceColor: 'grey',
+      faceColor: '#0800FFba',
+      backFaceColor: '#C6C6C6',
 
       baseNodeColor: 'blue',
       backBaseNodeColor: 'blue',
       baseNodeSize: 6,
 
       baseEdgeColor: 'red',
-      backBaseEdgeColor: 'red',
+      backBaseEdgeColor: '#FF000030',
       baseEdgeWidth: 4,
 
-      baseFaceColor: 'blue',
-      backBaseFaceColor: 'grey'
+      baseFaceColor: '#0800FF7a',
+      backBaseFaceColor: '#c6c6c6'
     }
 
     this.baseType = 'icosahedron';
@@ -59,7 +59,7 @@ class HandleGeodesic {
     this.zoomStep = 20;
     this.zoomMax = 5000;
     this.bases = new Map();
-    this.frequency = 8;
+    this.frequency = 3;
     this.rotationRads = 0.002;
 
     this.utils = new Utils();
