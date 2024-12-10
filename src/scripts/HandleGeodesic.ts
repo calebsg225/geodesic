@@ -22,8 +22,8 @@ class HandleGeodesic {
   constructor(canvasParentElement: HTMLElement, panelParentElement: HTMLElement) {
     this.drawOptions = {
       nodes: '',
-      edges: 'both',
-      faces: '',
+      edges: '',
+      faces: 'both',
       baseNodes: 'both',
       baseEdges: '',
       baseFaces: ''
@@ -37,7 +37,7 @@ class HandleGeodesic {
       backEdgeColor: '#D8D8D8',
       edgeWidth: 1,
 
-      faceColor: 'blue',
+      faceColor: '#0800FFa0',
       backFaceColor: 'grey',
 
       baseNodeColor: 'blue',
@@ -140,14 +140,8 @@ class HandleGeodesic {
     const gM = (n: number) => 4*((Math.floor(n/4) + 1)%3) + Math.floor(n/2)%2;
     const gB = (n: number) => 4*((Math.floor(n/4) + 2)%3) + 2*(n%2);
     this.utils.mapToChars([v, gT(v), gM(v)]).sort().join('');
-    const edges = this.utils.mapToChars([gT(v), gM(v), gM(v) + 2, gB(v), gB(v)+1]);
-    const faces = [
-      [gT(v), gM(v)],
-      [gM(v), gB(v)],
-      [gB(v), gB(v) + 1],
-      [gB(v) + 1, gM(v) + 2],
-      [gM(v) + 2, gT(v)]
-    ].map(val => this.utils.mapToChars([v, ...val]).join(''));
+    const edges = this.utils.mapToChars([gT(v), gM(v), gB(v), gB(v) + 1, gM(v) + 2]);
+    const faces = this.utils.calculateConnectedFaces(this.utils.mapChar(v), edges, 3);
     return {
       edges: edges,
       baseEdges: edges,
@@ -205,8 +199,8 @@ class HandleGeodesic {
       const faces = node.connections.faces;
       // bfs through all base faces
       for (let f = 0; f < faces.length; f++) {
-        const face = faces[f].split('').sort();
-        if (visited.has(face.join(''))) continue; // if face has been drawn, skip
+        const face = faces[f].split('-').sort();
+        if (visited.has(face.join('-'))) continue; // if face has been drawn, skip
 
         // generate all intermediate nodes (nodes not on the edges or vertices of the base shape)
         for (let i = v; i >= 0; i--) {
@@ -234,22 +228,29 @@ class HandleGeodesic {
 
                   // add edge to connections to be added after all nodes have been generated
                   if (addEdgeConnections[edgeKey]) addEdgeConnections[edgeKey].add(key);
-                  else (addEdgeConnections[edgeKey] = new Set());
+                  else (addEdgeConnections[edgeKey] = new Set([key]));
                 }
               }
+
+              // swap nodes 3 and 5 so that edges are in order for face generation
+              // not clean but it works for now (and probably wont be changed) :)
+              [connections.edges[3], connections.edges[5]] = [connections.edges[5], connections.edges[3]];
+
+              // calculate connected faces of face nodes
+              connections.faces = this.utils.calculateConnectedFaces(key, connections.edges, 3);
+
             } else if ((i && j) || (j && k) || (k && i)) { // parent node is an edge node
               for (let o = 0; o < 2; o++) {
-                const p = o*2-1;
+                const p = o*2-1; // 1 or -1
                 const i2 = i ? i+p : 0;
                 const j2 = j ? j+(i ? -p : p) : 0;
                 const k2 = k ? k-p : 0;
                 const edgeKey = this.utils.generateKeyName(face, i2, j2, k2, v);
                 connections.edges.push(edgeKey);
-
-                if (i2 === v || j2 === v || k2 === v) {
-                  // parent node connected to a vertex node
+                
+                if (i2 === v || j2 === v || k2 === v) { // parent node connected to a vertex node
                   if (addEdgeConnections[edgeKey]) addEdgeConnections[edgeKey].add(key);
-                  else (addEdgeConnections[edgeKey] = new Set());
+                  else (addEdgeConnections[edgeKey] = new Set([key]));
                 }
               }
             }
@@ -269,19 +270,22 @@ class HandleGeodesic {
           const e1key = [`${face[i]}${v-1}`, `${face[(i+1)%3]}${1}`].sort().join('');
           const e2key = [`${face[i]}${v-1}`, `${face[(i+2)%3]}${1}`].sort().join('');
           if (addEdgeConnections[e1key]) addEdgeConnections[e1key].add(e2key);
-          else (addEdgeConnections[e1key] = new Set(e2key));
+          else (addEdgeConnections[e1key] = new Set([e2key]));
           if (addEdgeConnections[e2key]) addEdgeConnections[e2key].add(e1key);
-          else (addEdgeConnections[e2key] = new Set(e1key));
+          else (addEdgeConnections[e2key] = new Set([e1key]));
         }
 
-        visited.add(face.join(''));
+        visited.add(face.join('-'));
       }
     }
 
     // add edge connections to base vertices and edges
     // doing it this way to be certain every node that needs edge connections has already been generated
     for (const key of Object.keys(addEdgeConnections)) {
-      this.nodes.get(key)!.connections.edges.push(...addEdgeConnections[key]);
+      const cons = this.nodes.get(key)!.connections;
+      cons.edges.push(...addEdgeConnections[key]);
+      // calculate faces now that all edges are connected
+      //cons.faces = this.utils.calculateConnectedFaces(key, cons.edges, 3);
     }
     console.log(this.nodes);
 

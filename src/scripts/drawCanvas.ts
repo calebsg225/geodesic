@@ -39,6 +39,8 @@ class DrawCanvas {
       backEdges,
       frontBaseEdges,
       backBaseEdges,
+      frontFaces,
+      backFaces,
 
       labelNodes
     } = this.separate(nodes);
@@ -52,6 +54,9 @@ class DrawCanvas {
       this.drawNodes(backNodes, styles.nodeSize, styles.backNodeColor);
     }
     // back faces
+    if (options.faces.length && options.faces !== 'front') {
+      this.drawFaces(backFaces, styles.backFaceColor);
+    }
     // back edges
     if (options.edges.length && options.edges !== 'front') {
       this.drawEdges(backEdges, styles.edgeWidth, styles.backEdgeColor);
@@ -71,6 +76,9 @@ class DrawCanvas {
       this.drawEdges(frontEdges, styles.edgeWidth, styles.edgeColor);
     }
     // front faces
+    if (options.faces.length && options.faces !== 'back') {
+      this.drawFaces(frontFaces, styles.faceColor);
+    }
     // front nodes
     if (options.nodes.length && options.nodes !== 'back') {
       this.drawNodes(frontNodes, styles.nodeSize, styles.nodeColor);
@@ -79,7 +87,7 @@ class DrawCanvas {
     if (options.baseNodes.length && options.baseNodes !== 'back') {
       this.drawNodes(frontBaseNodes, styles.baseNodeSize, styles.baseNodeColor);
     }
-    this.drawFaces(nodes);
+    //this.drawFaces(nodes);
     //this.labelNodes(labelNodes);
     /* this.drawEdges(nodes, 'black');
     this.drawEdges(nodes, 'red', true); */
@@ -147,6 +155,12 @@ class DrawCanvas {
     }
   }
 
+  private drawFaces = (faces: number[][][], color: string): void => {
+    for (let i = 0; i < faces.length; i++) {
+      this.drawFace(faces[i], color);
+    }
+  }
+
   /**
    * separates geodesic structure into groups based on type and z value
    * @param nodes nodes of geodesic structure to separate
@@ -173,11 +187,14 @@ class DrawCanvas {
     const separatedEdges = new Set<string>();
     const separatedBaseEdges = new Set<string>();
 
+    const separatedFaces = new Set<string>();
+    const separatedBaseFaces = new Set<string>();
+
     for (const k of nodes.keys()) {
       const isBaseNode = k.length === 1;
 
       const node = nodes.get(k)!;
-      const { edges, baseEdges } = node.connections;
+      const { edges, baseEdges, faces, baseFaces } = node.connections;
 
       const x = this.centerX + node.x;
       const y = this.centerY + node.y;
@@ -225,6 +242,28 @@ class DrawCanvas {
         separatedEdges.add( [edges[i], k].sort().join('') );
       }
 
+      // bfs through faces
+      for (let i = 0; i < faces.length; i++) {
+        // if already separated, continue
+        if (separatedFaces.has( faces[i].split('-').sort().join('') )) continue;
+        const pairs: number[][] = [];
+        // used to calculate if z is behind
+        let z = 0;
+        // draw each face
+        for (const p of faces[i].split('-')) {
+          const x = nodes.get(p)!.x + this.centerX;
+          const y = nodes.get(p)!.y + this.centerY;
+          z += nodes.get(p)!.z;
+          pairs.push([x, y]);
+        }
+        if (z/3 >= 0) {
+          frontFaces.push(pairs);
+        } else {
+          backFaces.push(pairs);
+        }
+        separatedFaces.add( faces[i].split('-').sort().join('') );
+      }
+
     }
 
     return {
@@ -267,7 +306,7 @@ class DrawCanvas {
           pairs.push([x, y]);
         }
         if (z/3 < 0) {
-          this.drawFace(pairs, '#ff0101aa');
+          frontFaces.push(pairs);
         } else {
           backFaces.push(pairs);
         }
@@ -275,37 +314,6 @@ class DrawCanvas {
       }
     }
     return {frontFaces: frontFaces, backFaces: backFaces}
-  }
-
-  drawFaces = (nodes: Geo) => {
-    const drawn = new Set();
-    const backFaces: number[][][] = [];
-    for (const k of nodes.keys()) {
-      const faces = nodes.get(k)!.connections.faces;
-      for (let j = 0; j < faces.length; j++) {
-        // if this particular face has been drawn, skip it
-        if (drawn.has(faces[j].split('').sort().join(''))) continue;
-        const pairs: number[][] = [];
-        // used to calculate if z is behind
-        let z = 0;
-        // draw each face
-        for (const p of faces[j]) {
-          const x = nodes.get(p)!.x + this.centerX;
-          const y = nodes.get(p)!.y + this.centerY;
-          z += nodes.get(p)!.z;
-          pairs.push([x, y]);
-        }
-        if (z/3 < 0) {
-          this.drawFace(pairs, '#ff0101aa');
-        } else {
-          backFaces.push(pairs);
-        }
-        drawn.add(faces[j].split('').sort().join(''));
-      }
-    }
-    for (const face of backFaces) {
-      this.drawFace(face, '#ff0101aa');
-    }
   }
 }
 

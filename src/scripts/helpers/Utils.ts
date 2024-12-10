@@ -25,6 +25,21 @@ class Utils {
     return `${i ? `${face[0]}${i%v ? i : ''}` : ''}${j ? `${face[1]}${j%v ? j : ''}` : ''}${k ? `${face[2]}${k%v ? k : ''}` : ''}`;
   }
 
+  calculateConnectedFaces = (node: string, edges: string[], vertices: number): string[] => {
+    const faces: string[] = [];
+    if (vertices < 3) throw(new Error);
+    const len = edges.length;
+    for (let i = 0; i < len; i++) {
+      const temp = [];
+      temp.push(node);
+      for (let k = i; k < i+vertices-1; k++) {
+        temp.push(edges[k%len]);
+      }
+      faces.push(temp.join('-'));
+    }
+    return faces;
+  }
+
   numFromChar = (str: string): number => {
     return str.charCodeAt(0) - 'a'.charCodeAt(0);
   }
