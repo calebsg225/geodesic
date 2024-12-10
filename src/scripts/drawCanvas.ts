@@ -48,51 +48,51 @@ class DrawCanvas {
     } = this.separate(nodes);
 
     // back base nodes
-    if (options.baseNodes.length && options.baseNodes !== 'front') {
+    if (options.baseNodes%3) {
       this.drawNodes(backBaseNodes, styles.baseNodeSize, styles.backBaseNodeColor);
     }
     // back nodes
-    if (options.nodes.length && options.nodes !== 'front') {
+    if (options.nodes%3) {
       this.drawNodes(backNodes, styles.nodeSize, styles.backNodeColor);
     }
     // back faces
-    if (options.faces.length && options.faces !== 'front') {
+    if (options.faces%3) {
       this.drawFaces(backFaces, styles.backFaceColor);
     }
     // back edges
-    if (options.edges.length && options.edges !== 'front') {
+    if (options.edges%3) {
       this.drawEdges(backEdges, styles.edgeWidth, styles.backEdgeColor);
     }
     // back base faces
-    if (options.baseFaces.length && options.baseFaces !== 'front') {
+    if (options.baseFaces%3) {
       this.drawFaces(backBaseFaces, styles.backBaseFaceColor);
     }
     // back base edges
-    if (options.baseEdges.length && options.baseEdges !== 'front') {
+    if (options.baseEdges%3) {
       this.drawEdges(backBaseEdges, styles.baseEdgeWidth, styles.backBaseEdgeColor);
     }
     // front base edges
-    if (options.baseEdges.length && options.baseEdges !== 'back') {
+    if (options.baseEdges > 1) {
       this.drawEdges(frontBaseEdges, styles.baseEdgeWidth, styles.baseEdgeColor);
     }
     // front base faces
-    if (options.baseFaces.length && options.baseFaces !== 'back') {
+    if (options.baseFaces > 1) {
       this.drawFaces(frontBaseFaces, styles.baseFaceColor);
     }
     // front edges
-    if (options.edges.length && options.edges !== 'back') {
+    if (options.edges > 1) {
       this.drawEdges(frontEdges, styles.edgeWidth, styles.edgeColor);
     }
     // front faces
-    if (options.faces.length && options.faces !== 'back') {
+    if (options.faces > 1) {
       this.drawFaces(frontFaces, styles.faceColor);
     }
     // front nodes
-    if (options.nodes.length && options.nodes !== 'back') {
+    if (options.nodes > 1) {
       this.drawNodes(frontNodes, styles.nodeSize, styles.nodeColor);
     }
     // front base nodes
-    if (options.baseNodes.length && options.baseNodes !== 'back') {
+    if (options.baseNodes > 1) {
       this.drawNodes(frontBaseNodes, styles.baseNodeSize, styles.baseNodeColor);
     }
     //this.labelNodes(labelNodes);

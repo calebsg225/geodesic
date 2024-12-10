@@ -7,7 +7,7 @@ type NodeConnections = {
   baseFaces?: string[]
 }
 
-type DrawSetting = '' | 'front' | 'back' | 'both';
+type DrawSetting = 0 | 1 | 2 | 3;
 
 type DrawOptions = {
   edges: DrawSetting,
