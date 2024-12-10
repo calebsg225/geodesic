@@ -21,12 +21,12 @@ class HandleGeodesic {
   private drawStyles: DrawStyles;
   constructor(canvasParentElement: HTMLElement, panelParentElement: HTMLElement) {
     this.drawOptions = {
-      nodes: 'both',
-      edges: 'both',
-      faces: 'both',
-      baseNodes: 'both',
-      baseEdges: 'both',
-      baseFaces: 'both'
+      nodes: 0,
+      edges: 2,
+      faces: 2,
+      baseNodes: 2,
+      baseEdges: 2,
+      baseFaces: 0
     }
     this.drawStyles = {
       nodeColor: 'blue',
@@ -49,7 +49,7 @@ class HandleGeodesic {
       baseEdgeWidth: 4,
 
       baseFaceColor: '#0800FF7a',
-      backBaseFaceColor: '#c6c6c6'
+      backBaseFaceColor: '#868686'
     }
 
     this.baseType = 'icosahedron';
