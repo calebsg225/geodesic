@@ -23,10 +23,10 @@ class HandleGeodesic {
     this.drawOptions = {
       nodes: 2,
       edges: 2,
-      faces: 0,
-      baseNodes: 3,
-      baseEdges: 0,
-      baseFaces: 0
+      faces: 2,
+      baseNodes: 2,
+      baseEdges: 2,
+      baseFaces: 2
     }
     this.drawStyles = {
       nodeColor: 'blue',
@@ -59,7 +59,7 @@ class HandleGeodesic {
     this.zoomStep = 20;
     this.zoomMax = 5000;
     this.bases = new Map();
-    this.frequency = 3;
+    this.frequency = 5;
     this.rotationRads = 0.002;
 
     this.utils = new Utils();
@@ -176,7 +176,7 @@ class HandleGeodesic {
     }
     switch(this.baseType) {
       case('icosahedron'):
-        this.generateIcosahedronAtFrequency2();
+        this.generateIcosahedronAtFrequency();
         break;
       case('cube'):
         break;
@@ -186,7 +186,7 @@ class HandleGeodesic {
   }
 
   // remake icosahedron tesselation function?
-  generateIcosahedronAtFrequency2 = (): void => {
+  private generateIcosahedronAtFrequency = (): void => {
     this.nodes = new Map();
     const baseNodes = this.bases.get(this.baseType)!;
     const v = this.frequency;
@@ -200,10 +200,10 @@ class HandleGeodesic {
       this.nodes.set(baseNodeKey, new GeoNode(x, y, z, newCons));
     }
 
-    // 2) calculate edge nodes
+    // 2) calculate edge node edges
+    const visitedEdges = new Set<string>();
     for (const baseNodeParent of baseNodes.keys()) {
       const {connections: {baseEdges}} = baseNodes.get(baseNodeParent)!;
-      const visitedEdges = new Set<string>();
       // bfs through base edges
       for (const baseNodeChild of baseEdges!) {
         const edge = [baseNodeParent, baseNodeChild].sort();
@@ -215,125 +215,87 @@ class HandleGeodesic {
 
           const connections: NodeConnections = {edges: new Array(2), faces: []}
           connections.edges[0] = this.utils.generateEdgeKey(edge, i-1, j+1, v);
-          connections.edges[3] = this.utils.generateEdgeKey(edge, i+1, j-1, v);
+          connections.edges[1] = this.utils.generateEdgeKey(edge, i+1, j-1, v);
 
           const {x:x0, y:y0, z:z0} = baseNodes.get(edge[0])!;
           const {x:x1, y:y1, z:z1} = baseNodes.get(edge[1])!;
           const {x, y, z} = this.utils.icosahedronIntermediateNode(i, j, 0, x0, y0, z0, x1, y1, z1, 0, 0, 0);
           // add new edge node
           this.nodes.set(edgeNodeKey, new GeoNode(x*this.zoom, y*this.zoom, z*this.zoom, connections));
+
+          // add edge connections to base vertices
+          if (!(i-1)) {
+            this.nodes.get(edge[1])!.connections.edges.push(edgeNodeKey);
+          }
+          if (!(j-1)) {
+            this.nodes.get(edge[0])!.connections.edges.push(edgeNodeKey);
+          }
         }
         visitedEdges.add(edge.join('-'));
       }
     }
 
-    // 3) calculate face nodes
-  }
+    // 3) calculate face node edges
+    const visitedFaces = new Set<string>();
+    for (const baseNode of baseNodes.keys()) {
+      const {connections: {baseFaces}} = baseNodes.get(baseNode)!;
+      // bfs through base faces
+      for (const baseFace of baseFaces!) {
+        const face = baseFace.split('-').sort();
+        if (visitedFaces.has(face.join('-'))) continue; // face nodes on this base face have been calculated
 
-  private generateIcosahedronAtFrequency = (): void => {
-    this.nodes = new Map();
-    const baseNodes = this.bases.get(this.baseType)!;
-    const v = this.frequency;
-    const visited = new Set<string>();
-
-    // edge connections to add after all nodes have been generated
-    const addEdgeConnections: {[key: string]: Set<string>} = {};
-
-    for (const k of baseNodes.keys()) {
-      const node = baseNodes.get(k)!;
-      const faces = node.connections.faces;
-      // bfs through all base faces
-      for (let f = 0; f < faces.length; f++) {
-        const face = faces[f].split('-').sort();
-        if (visited.has(face.join('-'))) continue; // if face has been drawn, skip
-
-        // generate all intermediate nodes (nodes not on the edges or vertices of the base shape)
-        for (let i = v; i >= 0; i--) {
-          for (let j = v-i; j >= 0; j--) {
-            const connections: NodeConnections = { edges: [], faces: [] }
+        for (let i = 1; i < v; i++) {
+          for (let j = 1; j < v-i; j++) {
             const k = v-i-j;
-            const key = this.utils.generateKeyName(face, i, j, k, v);
+            const connections: NodeConnections = {edges: [], faces: []}
+            const faceNodeKey = this.utils.generateKeyName(face, i, j, k, v);
+            for (let o = 0; o < 3; o++) {
+              for (let p = 0; p < 2; p++) {
+                const i2 = i+(o-1);
+                const j2 = j+((o+1+p)%3 - 1);
+                const k2 = v-i2-j2;
+                const edgeNodeKey = this.utils.generateKeyName(face, i2, j2, k2, v); // node connected by an edge to parent node
+                connections.edges.push(edgeNodeKey);
+                if (i2 && j2 && k2) continue; // calculated node is on a base face
+                // calculated is edge node (vertex nodes are not reachable by one edge from face nodes)
 
-            // add base connections to base vertices 
-            if (baseNodes.has(key)) {
-              connections.baseEdges = baseNodes.get(key)!.connections.baseEdges!;
-              connections.baseFaces = baseNodes.get(key)!.connections.baseFaces!;
-            }
-
-            if (i && j && k) { // parent node is a face node
-              for (let o = 0; o < 3; o++) {
-                for (let p = 0; p < 2; p++) {
-                  const i2 = i+(o-1);
-                  const j2 = j+((o+1+p)%3 - 1);
-                  const k2 = v-i2-j2;
-                  const edgeKey = this.utils.generateKeyName(face, i2, j2, k2, v); // node connected by an edge to parent node
-                  connections.edges.push(edgeKey);
-                  if (i2 && j2 && k2) continue; // calculated node is face node
-                  // calculated is edge node (vertex nodes are not reachable by one edge from face nodes)
-
-                  // add edge to connections to be added after all nodes have been generated
-                  if (addEdgeConnections[edgeKey]) addEdgeConnections[edgeKey].add(key);
-                  else (addEdgeConnections[edgeKey] = new Set([key]));
-                }
-              }
-
-              // swap nodes 3 and 5 so that edges are in order for face generation
-              // not clean but it works for now (and probably wont be changed) :)
-              [connections.edges[3], connections.edges[5]] = [connections.edges[5], connections.edges[3]];
-
-              // calculate connected faces of face nodes
-              connections.faces = this.utils.calculateConnectedFaces(key, connections.edges, 3);
-
-            } else if ((i && j) || (j && k) || (k && i)) { // parent node is an edge node
-              for (let o = 0; o < 2; o++) {
-                const p = o*2-1; // 1 or -1
-                const i2 = i ? i+p : 0;
-                const j2 = j ? j+(i ? -p : p) : 0;
-                const k2 = k ? k-p : 0;
-                const edgeKey = this.utils.generateKeyName(face, i2, j2, k2, v);
-                connections.edges.push(edgeKey);
-                
-                if (i2 === v || j2 === v || k2 === v) { // parent node connected to a vertex node
-                  if (addEdgeConnections[edgeKey]) addEdgeConnections[edgeKey].add(key);
-                  else (addEdgeConnections[edgeKey] = new Set([key]));
-                }
+                // add edge connections to base edges
+                this.nodes.get(edgeNodeKey)!.connections.edges.push(faceNodeKey);
               }
             }
 
-            // if this node has been generated, skip
-            if (this.nodes.has(key)) continue;
+            // swap nodes 3 and 5 so that edges are in order for face generation
+            // not clean but it works for now (and probably wont be changed) :)
+            [connections.edges[3], connections.edges[5]] = [connections.edges[5], connections.edges[3]];
+
+            
+            // calculate connected faces of face nodes
+            connections.faces = this.utils.calculateConnectedFaces(faceNodeKey, connections.edges, 3);
+
             const {x:x0, y:y0, z:z0} = baseNodes.get(face[0])!;
             const {x:x1, y:y1, z:z1} = baseNodes.get(face[1])!;
             const {x:x2, y:y2, z:z2} = baseNodes.get(face[2])!;
             const {x, y, z} = this.utils.icosahedronIntermediateNode(i, j, k, x0, y0, z0, x1, y1, z1, x2, y2, z2);
-            this.nodes.set(key, new GeoNode(x*this.zoom, y*this.zoom, z*this.zoom, connections));
+            this.nodes.set(faceNodeKey, new GeoNode(x*this.zoom, y*this.zoom, z*this.zoom, connections));
+
           }
         }
 
-        // draw face-specific edges
+        // calculate face-specific edges (edges that form the pentagons)
         for (let i = 0; i < 3; i++) {
           const e1key = [`${face[i]}${v-1}`, `${face[(i+1)%3]}${1}`].sort().join('');
           const e2key = [`${face[i]}${v-1}`, `${face[(i+2)%3]}${1}`].sort().join('');
-          if (addEdgeConnections[e1key]) addEdgeConnections[e1key].add(e2key);
-          else (addEdgeConnections[e1key] = new Set([e2key]));
-          if (addEdgeConnections[e2key]) addEdgeConnections[e2key].add(e1key);
-          else (addEdgeConnections[e2key] = new Set([e1key]));
+          this.nodes.get(e1key)!.connections.edges.push(e2key);
+          this.nodes.get(e2key)!.connections.edges.push(e1key);
         }
 
-        visited.add(face.join('-'));
+        visitedFaces.add(face.join('-'));
       }
     }
 
-    // add edge connections to base vertices and edges
-    // doing it this way to be certain every node that needs edge connections has already been generated
-    for (const key of Object.keys(addEdgeConnections)) {
-      const cons = this.nodes.get(key)!.connections;
-      cons.edges.push(...addEdgeConnections[key]);
-      // calculate faces now that all edges are connected
-      //cons.faces = this.utils.calculateConnectedFaces(key, cons.edges, 3);
-    }
-    console.log(this.nodes);
+    // 4) calculate faces
 
+    console.log(this.nodes);
   }
 
   private render = () => {

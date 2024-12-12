@@ -44,7 +44,7 @@ class DrawCanvas {
       frontBaseFaces,
       backBaseFaces,
 
-      labelNodes
+      //labelNodes
     } = this.separate(nodes);
 
     // back base nodes
@@ -100,9 +100,9 @@ class DrawCanvas {
 
   private labelNode = (x: number, y: number, text: string) => {
     if (!this.ctx) return;
-    const s = 12;
+    const s = 20;
     this.ctx.font = `Bold ${4*s}px Arial`;
-    this.ctx.fillStyle = "red";
+    this.ctx.fillStyle = "#FF00A6";
     this.ctx.fillText(text.toUpperCase(), x-s, y+s);
   }
 
