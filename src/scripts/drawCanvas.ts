@@ -213,7 +213,7 @@ class DrawCanvas {
         if (isBaseNode) backBaseNodes.push([x,y]);
       }
 
-      if (isBaseNode) labelNodes.push([x, y, k]);
+      if (isBaseNode && node.z >= 0) labelNodes.push([x, y, k]);
 
       if (baseEdges) { // is a base node
         // bfs through base edges
@@ -259,6 +259,7 @@ class DrawCanvas {
       for (let i = 0; i < edges.length; i++) {
         // if already separated, continue
         if (separatedEdges.has( [edges[i], k].sort().join('') )) continue;
+        if (!nodes.get(edges[i])) continue; // TEMP
         const dx = nodes.get(edges[i])!.x + this.centerX;
         const dy = nodes.get(edges[i])!.y + this.centerY;
         const aZ = this.utils.averageZ(node.z, nodes.get(edges[i])!.z);

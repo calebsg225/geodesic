@@ -21,6 +21,11 @@ class Utils {
   // 2) calculate angle between each node and a calculated axis
   // 3) order by angle size
 
+
+  generateEdgeKey = (edge: string[], i: number, j: number, v: number): string => {
+    return (i ? (edge[0] + (i%v ? i : '')) : '') + (j ? (edge[1] + (j%v ? j : '')) : '');
+  }
+
   generateKeyName = (face: string[], i: number, j: number, k: number, v: number): string => {
     return `${i ? `${face[0]}${i%v ? i : ''}` : ''}${j ? `${face[1]}${j%v ? j : ''}` : ''}${k ? `${face[2]}${k%v ? k : ''}` : ''}`;
   }

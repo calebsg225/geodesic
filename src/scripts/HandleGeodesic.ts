@@ -21,11 +21,11 @@ class HandleGeodesic {
   private drawStyles: DrawStyles;
   constructor(canvasParentElement: HTMLElement, panelParentElement: HTMLElement) {
     this.drawOptions = {
-      nodes: 0,
+      nodes: 2,
       edges: 2,
-      faces: 2,
-      baseNodes: 2,
-      baseEdges: 2,
+      faces: 0,
+      baseNodes: 3,
+      baseEdges: 0,
       baseFaces: 0
     }
     this.drawStyles = {
@@ -176,13 +176,58 @@ class HandleGeodesic {
     }
     switch(this.baseType) {
       case('icosahedron'):
-        this.generateIcosahedronAtFrequency();
+        this.generateIcosahedronAtFrequency2();
         break;
       case('cube'):
         break;
       default:
         break;
     }
+  }
+
+  // remake icosahedron tesselation function?
+  generateIcosahedronAtFrequency2 = (): void => {
+    this.nodes = new Map();
+    const baseNodes = this.bases.get(this.baseType)!;
+    const v = this.frequency;
+
+    // 1) transfer base nodes
+    for (const baseNodeKey of baseNodes.keys()) {
+      const {x, y, z, connections: baseCons} = baseNodes.get(baseNodeKey)!;
+      const newCons: NodeConnections = {edges: [], faces: []}
+      newCons.baseEdges = baseCons.baseEdges;
+      newCons.baseFaces = baseCons.baseFaces;
+      this.nodes.set(baseNodeKey, new GeoNode(x, y, z, newCons));
+    }
+
+    // 2) calculate edge nodes
+    for (const baseNodeParent of baseNodes.keys()) {
+      const {connections: {baseEdges}} = baseNodes.get(baseNodeParent)!;
+      const visitedEdges = new Set<string>();
+      // bfs through base edges
+      for (const baseNodeChild of baseEdges!) {
+        const edge = [baseNodeParent, baseNodeChild].sort();
+        if (visitedEdges.has(edge.join('-'))) continue; // already visited this edge
+
+        for (let i = 1; i < v; i++) {
+          const j = v-i;
+          const edgeNodeKey = edge[0] + i + edge[1] + j;
+
+          const connections: NodeConnections = {edges: new Array(2), faces: []}
+          connections.edges[0] = this.utils.generateEdgeKey(edge, i-1, j+1, v);
+          connections.edges[3] = this.utils.generateEdgeKey(edge, i+1, j-1, v);
+
+          const {x:x0, y:y0, z:z0} = baseNodes.get(edge[0])!;
+          const {x:x1, y:y1, z:z1} = baseNodes.get(edge[1])!;
+          const {x, y, z} = this.utils.icosahedronIntermediateNode(i, j, 0, x0, y0, z0, x1, y1, z1, 0, 0, 0);
+          // add new edge node
+          this.nodes.set(edgeNodeKey, new GeoNode(x*this.zoom, y*this.zoom, z*this.zoom, connections));
+        }
+        visitedEdges.add(edge.join('-'));
+      }
+    }
+
+    // 3) calculate face nodes
   }
 
   private generateIcosahedronAtFrequency = (): void => {
