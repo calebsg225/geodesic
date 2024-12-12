@@ -25,6 +25,17 @@ class DrawCanvas {
     this.ctx.fillRect(0, 0, this.width, this.height);
   }
 
+  /**
+   * 
+   * @param n axis value to adjust
+   * @param z z axis value
+   * @param isXAxis set true if n is x
+   * @returns adjusted coordinate for perspective
+   */
+  private d = (n: number, z: number, isXAxis: boolean = false): number => {
+    return n*(1+z/4000) + (isXAxis ? this.centerX : this.centerY);
+  }
+
   // draws all selected aspects of the nodes inputed
   // all in one function so everything can be drawn in order from back to front based on z value
   draw = (nodes: Geo, options: DrawOptions, styles: DrawStyles) =>  {
@@ -128,7 +139,6 @@ class DrawCanvas {
     this.ctx.lineTo(dx, dy);
     this.ctx.lineWidth = width;
     this.ctx.strokeStyle = color;
-    this.ctx.lineTo(x, y);
     this.ctx.stroke();
   }
 
@@ -201,8 +211,8 @@ class DrawCanvas {
       const node = nodes.get(k)!;
       const { edges, baseEdges, faces, baseFaces } = node.connections;
 
-      const x = this.centerX + node.x;
-      const y = this.centerY + node.y;
+      const x = this.d(node.x, node.z, true);
+      const y = this.d(node.y, node.z);
 
       // handle node separation
       if (node.z >= 0) {
@@ -220,9 +230,10 @@ class DrawCanvas {
         for (let i = 0; i < baseEdges.length; i++) {
           // if already separated base edge, continue
           if (separatedBaseEdges.has( [baseEdges[i], k].sort().join('') )) continue;
-          const dx = nodes.get(baseEdges[i])!.x + this.centerX;
-          const dy = nodes.get(baseEdges[i])!.y + this.centerY;
-          const aZ = this.utils.averageZ(node.z, nodes.get(baseEdges[i])!.z);
+          const dz = nodes.get(baseEdges[i])!.z;
+          const dx = this.d(nodes.get(baseEdges[i])!.x, dz, true);
+          const dy = this.d(nodes.get(baseEdges[i])!.y, dz);
+          const aZ = this.utils.averageZ(node.z, dz);
           if (aZ >= 0) {
             frontBaseEdges.push([x, y, dx, dy]);
           } else {
@@ -239,14 +250,13 @@ class DrawCanvas {
           if (separatedBaseFaces.has( baseFaces[i].split('-').sort().join('') )) continue;
           const pairs: number[][] = [];
           // used to calculate if average z is positive
-          let z = 0;
+          let aZ = 0;
           for (const p of baseFaces[i].split('-')) {
-            const x = nodes.get(p)!.x + this.centerX;
-            const y = nodes.get(p)!.y + this.centerY;
-            z += nodes.get(p)!.z;
-            pairs.push([x, y]);
+            const {x: dx, y: dy, z: dz} = nodes.get(p)!;
+            aZ += dz;
+            pairs.push([this.d(dx, dz, true), this.d(dy, dz)]);
           }
-          if (z/3 >= 0) {
+          if (aZ/3 >= 0) {
             frontBaseFaces.push(pairs);
           } else {
             backBaseFaces.push(pairs);
@@ -260,9 +270,10 @@ class DrawCanvas {
         // if already separated, continue
         if (separatedEdges.has( [edges[i], k].sort().join('') )) continue;
         if (!nodes.get(edges[i])) continue; // TEMP
-        const dx = nodes.get(edges[i])!.x + this.centerX;
-        const dy = nodes.get(edges[i])!.y + this.centerY;
-        const aZ = this.utils.averageZ(node.z, nodes.get(edges[i])!.z);
+        const dz = nodes.get(edges[i])!.z;
+        const dx = this.d(nodes.get(edges[i])!.x, dz, true);
+        const dy = this.d(nodes.get(edges[i])!.y, dz);
+        const aZ = this.utils.averageZ(node.z, dz);
         if (aZ >= 0) {
           frontEdges.push([x, y, dx, dy]);
         } else {
@@ -277,14 +288,13 @@ class DrawCanvas {
         if (separatedFaces.has( faces[i].split('-').sort().join('') )) continue;
         const pairs: number[][] = [];
         // used to calculate if average z is positive
-        let z = 0;
+        let aZ = 0;
         for (const p of faces[i].split('-')) {
-          const x = nodes.get(p)!.x + this.centerX;
-          const y = nodes.get(p)!.y + this.centerY;
-          z += nodes.get(p)!.z;
-          pairs.push([x, y]);
+          const {x: dx, y: dy, z: dz} = nodes.get(p)!;
+          aZ += dz;
+          pairs.push([this.d(dx, dz, true), this.d(dy, dz)]);
         }
-        if (z/3 >= 0) {
+        if (aZ/3 >= 0) {
           frontFaces.push(pairs);
         } else {
           backFaces.push(pairs);

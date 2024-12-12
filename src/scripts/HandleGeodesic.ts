@@ -24,12 +24,12 @@ class HandleGeodesic {
       nodes: 2,
       edges: 2,
       faces: 2,
-      baseNodes: 2,
-      baseEdges: 2,
-      baseFaces: 2
+      baseNodes: 0,
+      baseEdges: 0,
+      baseFaces: 0
     }
     this.drawStyles = {
-      nodeColor: 'blue',
+      nodeColor: 'black',
       backNodeColor: '#FFC7C7',
       nodeSize: 3,
 
@@ -37,7 +37,7 @@ class HandleGeodesic {
       backEdgeColor: '#D8D8D8',
       edgeWidth: 1,
 
-      faceColor: '#0800FFba',
+      faceColor: '#0800FF9a',
       backFaceColor: '#C6C6C6',
 
       baseNodeColor: 'blue',
@@ -54,10 +54,10 @@ class HandleGeodesic {
 
     this.baseType = 'icosahedron';
     this.nodes = new Map();
-    this.zoom = 495;
+    this.zoom = 475;
     this.zoomMin = 50;
     this.zoomStep = 20;
-    this.zoomMax = 5000;
+    this.zoomMax = 1000;
     this.bases = new Map();
     this.frequency = 5;
     this.rotationRads = 0.002;
@@ -89,7 +89,7 @@ class HandleGeodesic {
       icosahedronBase.set(
         this.utils.mapChar(v), 
         new GeoNode(
-          x* this.zoom, y* this.zoom, z* this.zoom, 
+          x * this.zoom, y * this.zoom, z * this.zoom, 
           this.getIcosahedronConnections(v)
         )
       );
