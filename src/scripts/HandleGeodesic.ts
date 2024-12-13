@@ -24,12 +24,12 @@ class HandleGeodesic {
       nodes: 2,
       edges: 2,
       faces: 2,
-      baseNodes: 0,
+      baseNodes: 2,
       baseEdges: 0,
       baseFaces: 0
     }
     this.drawStyles = {
-      nodeColor: 'black',
+      nodeColor: 'blue',
       backNodeColor: '#FFC7C7',
       nodeSize: 3,
 
@@ -37,19 +37,23 @@ class HandleGeodesic {
       backEdgeColor: '#D8D8D8',
       edgeWidth: 1,
 
-      faceColor: '#0800FF9a',
+      faceColor: '#0800FF7a',
+      faceEdgeColor: 'black',
       backFaceColor: '#C6C6C6',
+      backFaceEdgeColor: '#C6C6C6',
 
-      baseNodeColor: 'blue',
-      backBaseNodeColor: 'blue',
+      baseNodeColor: 'red',
+      backBaseNodeColor: '#C6C6C6',
       baseNodeSize: 6,
 
       baseEdgeColor: 'red',
       backBaseEdgeColor: '#FF000030',
-      baseEdgeWidth: 4,
+      baseEdgeWidth: 3,
 
       baseFaceColor: '#0800FF7a',
-      backBaseFaceColor: '#868686'
+      baseFaceEdgeColor: 'black',
+      backBaseFaceColor: '#868686',
+      backBaseFaceEdgeColor: '#868686'
     }
 
     this.baseType = 'icosahedron';
@@ -59,7 +63,7 @@ class HandleGeodesic {
     this.zoomStep = 20;
     this.zoomMax = 1000;
     this.bases = new Map();
-    this.frequency = 5;
+    this.frequency = 6;
     this.rotationRads = 0.002;
 
     this.utils = new Utils();
@@ -197,6 +201,12 @@ class HandleGeodesic {
       const newCons: NodeConnections = {edges: [], faces: []}
       newCons.baseEdges = baseCons.baseEdges;
       newCons.baseFaces = baseCons.baseFaces;
+
+      for (const baseEdge of baseCons.baseEdges!) {
+        newCons.edges.push([baseNodeKey + (v-1), baseEdge + 1].sort().join(''));
+      }
+
+      newCons.faces = this.utils.calculateConnectedFaces(baseNodeKey, newCons.edges, 3);
       this.nodes.set(baseNodeKey, new GeoNode(x, y, z, newCons));
     }
 
@@ -207,7 +217,7 @@ class HandleGeodesic {
       // bfs through base edges
       for (const baseNodeChild of baseEdges!) {
         const edge = [baseNodeParent, baseNodeChild].sort();
-        if (visitedEdges.has(edge.join('-'))) continue; // already visited this edge
+        if (visitedEdges.has(edge.join(''))) continue; // already visited this edge
 
         for (let i = 1; i < v; i++) {
           const j = v-i;
@@ -222,16 +232,8 @@ class HandleGeodesic {
           const {x, y, z} = this.utils.icosahedronIntermediateNode(i, j, 0, x0, y0, z0, x1, y1, z1, 0, 0, 0);
           // add new edge node
           this.nodes.set(edgeNodeKey, new GeoNode(x*this.zoom, y*this.zoom, z*this.zoom, connections));
-
-          // add edge connections to base vertices
-          if (!(i-1)) {
-            this.nodes.get(edge[1])!.connections.edges.push(edgeNodeKey);
-          }
-          if (!(j-1)) {
-            this.nodes.get(edge[0])!.connections.edges.push(edgeNodeKey);
-          }
         }
-        visitedEdges.add(edge.join('-'));
+        visitedEdges.add(edge.join(''));
       }
     }
 

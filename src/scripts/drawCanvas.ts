@@ -68,7 +68,7 @@ class DrawCanvas {
     }
     // back faces
     if (options.faces%3) {
-      this.drawFaces(backFaces, styles.backFaceColor);
+      this.drawFaces(backFaces, styles.backFaceColor, styles.backFaceEdgeColor);
     }
     // back edges
     if (options.edges%3) {
@@ -76,7 +76,7 @@ class DrawCanvas {
     }
     // back base faces
     if (options.baseFaces%3) {
-      this.drawFaces(backBaseFaces, styles.backBaseFaceColor);
+      this.drawFaces(backBaseFaces, styles.backBaseFaceColor, styles.backBaseFaceEdgeColor);
     }
     // back base edges
     if (options.baseEdges%3) {
@@ -88,7 +88,7 @@ class DrawCanvas {
     }
     // front base faces
     if (options.baseFaces > 1) {
-      this.drawFaces(frontBaseFaces, styles.baseFaceColor);
+      this.drawFaces(frontBaseFaces, styles.baseFaceColor, styles.baseFaceEdgeColor);
     }
     // front edges
     if (options.edges > 1) {
@@ -96,7 +96,7 @@ class DrawCanvas {
     }
     // front faces
     if (options.faces > 1) {
-      this.drawFaces(frontFaces, styles.faceColor);
+      this.drawFaces(frontFaces, styles.faceColor, styles.faceEdgeColor);
     }
     // front nodes
     if (options.nodes > 1) {
@@ -142,10 +142,10 @@ class DrawCanvas {
     this.ctx.stroke();
   }
 
-  private drawFace = (pairs: number[][], color: string): void => {
+  private drawFace = (pairs: number[][], color: string, edgeColor: string): void => {
     if (!this.ctx) return;
     this.ctx.beginPath();
-    this.ctx.strokeStyle = 'black';
+    this.ctx.strokeStyle = edgeColor;
     this.ctx.fillStyle = color;
     this.ctx.lineWidth = 2;
     this.ctx.moveTo(pairs[0][0], pairs[0][1]);
@@ -170,9 +170,9 @@ class DrawCanvas {
     }
   }
 
-  private drawFaces = (faces: number[][][], color: string): void => {
+  private drawFaces = (faces: number[][][], color: string, edgeColor: string): void => {
     for (let i = 0; i < faces.length; i++) {
-      this.drawFace(faces[i], color);
+      this.drawFace(faces[i], color, edgeColor);
     }
   }
 

@@ -28,7 +28,9 @@ type DrawStyles = {
   edgeWidth: number,
 
   faceColor: string,
+  faceEdgeColor: string,
   backFaceColor: string,
+  backFaceEdgeColor: string,
 
   baseNodeColor: string,
   backBaseNodeColor: string,
@@ -39,7 +41,9 @@ type DrawStyles = {
   baseEdgeWidth: number,
 
   baseFaceColor: string,
-  backBaseFaceColor: string
+  baseFaceEdgeColor: string,
+  backBaseFaceColor: string,
+  backBaseFaceEdgeColor: string
 }
 
 type Geo = Map<string, GeoNode>;

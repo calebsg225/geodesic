@@ -32,7 +32,7 @@ class Utils {
 
   calculateConnectedFaces = (node: string, edges: string[], vertices: number): string[] => {
     const faces: string[] = [];
-    if (vertices < 3) throw(new Error);
+    if (vertices < 3) throw(new Error('cannot calculate faces of an edge'));
     const len = edges.length;
     for (let i = 0; i < len; i++) {
       const temp = [];
