@@ -55,7 +55,7 @@ class DrawCanvas {
       frontBaseFaces,
       backBaseFaces,
 
-      //labelNodes
+      labelNodes
     } = this.separate(nodes);
 
     // back base nodes
@@ -106,7 +106,7 @@ class DrawCanvas {
     if (options.baseNodes > 1) {
       this.drawNodes(frontBaseNodes, styles.baseNodeSize, styles.baseNodeColor);
     }
-    //this.labelNodes(labelNodes);
+    this.labelNodes(labelNodes);
   }
 
   private labelNode = (x: number, y: number, text: string) => {

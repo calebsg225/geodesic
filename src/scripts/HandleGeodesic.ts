@@ -31,7 +31,7 @@ class HandleGeodesic {
     this.drawStyles = {
       nodeColor: 'blue',
       backNodeColor: '#FFC7C7',
-      nodeSize: 3,
+      nodeSize: 2,
 
       edgeColor: 'black',
       backEdgeColor: '#D8D8D8',
@@ -223,9 +223,10 @@ class HandleGeodesic {
           const j = v-i;
           const edgeNodeKey = edge[0] + i + edge[1] + j;
 
-          const connections: NodeConnections = {edges: new Array(2), faces: []}
-          connections.edges[0] = this.utils.generateEdgeKey(edge, i-1, j+1, v);
-          connections.edges[1] = this.utils.generateEdgeKey(edge, i+1, j-1, v);
+          const connections: NodeConnections = {edges: new Array(6), faces: []}
+          // placed in order for face generation later
+          connections.edges[0] = this.utils.generateEdgeKey(edge, i+1, j-1, v);
+          connections.edges[3] = this.utils.generateEdgeKey(edge, i-1, j+1, v);
 
           const {x:x0, y:y0, z:z0} = baseNodes.get(edge[0])!;
           const {x:x1, y:y1, z:z1} = baseNodes.get(edge[1])!;
@@ -260,9 +261,24 @@ class HandleGeodesic {
                 connections.edges.push(edgeNodeKey);
                 if (i2 && j2 && k2) continue; // calculated node is on a base face
                 // calculated is edge node (vertex nodes are not reachable by one edge from face nodes)
-
+                  
+                const index = (i2 ? i2 : j2) === (i2 ? i : j) ? 1 : 2;
+                
+                const curEdgeEdges = this.nodes.get(edgeNodeKey)!.connections.edges;
+                const adjustedIndex = !curEdgeEdges[index] ? index : 6-index;
+                curEdgeEdges[adjustedIndex] = faceNodeKey;
+                
+                if ((i2 ? i2 : j2) === 1 || (i2 ? i2 : j2) === v-1) { // node is on a pentagon
+                  const i3 = (i2 ? (i2 > 1 ? i2 : 0 ) : 1);
+                  const j3 = (j2 ? (j2 > 1 ? j2 : 0 ) : 1);
+                  const k3 = (k2 ? (k2 > 1 ? k2 : 0 ) : 1);
+                  const otherEdgeNodeKey = this.utils.generateKeyName(face, i3, j3, k3, v);
+                  const pentaAdjustedIndex = adjustedIndex === index ? 3-index : 9-adjustedIndex;
+                  curEdgeEdges[pentaAdjustedIndex] = otherEdgeNodeKey;
+                }
+                
                 // add edge connections to base edges
-                this.nodes.get(edgeNodeKey)!.connections.edges.push(faceNodeKey);
+                //this.nodes.get(edgeNodeKey)!.connections.edges.push(faceNodeKey);
               }
             }
 
