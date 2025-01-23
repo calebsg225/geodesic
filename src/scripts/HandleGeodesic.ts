@@ -23,9 +23,9 @@ class HandleGeodesic {
     this.drawOptions = {
       nodes: 2,
       edges: 2,
-      faces: 2,
+      faces: 0,
       baseNodes: 2,
-      baseEdges: 0,
+      baseEdges: 2,
       baseFaces: 0
     }
     this.drawStyles = {
@@ -63,7 +63,7 @@ class HandleGeodesic {
     this.zoomStep = 20;
     this.zoomMax = 1000;
     this.bases = new Map();
-    this.frequency = 6;
+    this.frequency = 3;
     this.rotationRads = 0.002;
 
     this.utils = new Utils();
